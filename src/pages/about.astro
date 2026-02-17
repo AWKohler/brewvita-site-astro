@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | About</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+        </style>
+    </head>
+    <body class="bg-fog text-navy font-sans antialiased">
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Menu</a
+                    >
+                    <a
+                        href="/about"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors bg-mist"
+                        >About</a
+                    >
+                    <a
+                        href="/contact"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Contact</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Intro -->
+        <section class="py-24 px-6 border-b-4 border-navy bg-white">
+            <div class="max-w-5xl mx-auto">
+                <span
+                    class="bg-navy text-mist px-2 py-1 font-mono text-xs uppercase mb-4 inline-block"
+                    >The Story</span
+                >
+                <h1
+                    class="text-6xl md:text-8xl font-bold uppercase mb-10 leading-none"
+                >
+                    Get to<br />Know Us
+                </h1>
+                <p
+                    class="font-mono text-xl md:text-2xl leading-relaxed max-w-3xl border-l-4 border-mist pl-6"
+                >
+                    Learn about Brewvita’s mission and the story behind our
+                    student-led coffee company.
+                </p>
+            </div>
+        </section>
+
+        <!-- Who We Are Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 border-b-4 border-navy">
+            <div
+                class="p-12 md:p-20 bg-slate text-mist border-b-4 lg:border-b-0 lg:border-r-4 border-navy"
+            >
+                <h2 class="text-4xl font-bold uppercase mb-8 text-white">
+                    Who We Are
+                </h2>
+                <div class="space-y-8 font-mono">
+                    <div class="group">
+                        <h3
+                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
+                        >
+                            How We Started
+                        </h3>
+                        <p class="text-sm opacity-80">
+                            Brewvita began as a student-driven initiative
+                            focused on building a campus community around
+                            quality coffee.
+                        </p>
+                    </div>
+                    <div class="w-full h-px bg-white/20"></div>
+                    <div class="group">
+                        <h3
+                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
+                        >
+                            Our Mission
+                        </h3>
+                        <p class="text-sm opacity-80">
+                            We serve crafted drinks, support closed coffee
+                            missions, and invest in student leadership.
+                        </p>
+                    </div>
+                    <div class="w-full h-px bg-white/20"></div>
+                    <div class="group">
+                        <h3
+                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
+                        >
+                            Why Brewvita?
+                        </h3>
+                        <p class="text-sm opacity-80">
+                            Every purchase fuels student entrepreneurship and
+                            helps us give back.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="p-12 md:p-20 bg-mist text-navy flex items-center justify-center relative overflow-hidden"
+            >
+                <!-- Background element -->
+                <div
+                    class="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10"
+                >
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                    <div class="border-r border-b border-navy"></div>
+                </div>
+
+                <div
+                    class="relative z-10 bg-white border-hard p-10 shadow-hard rotate-2"
+                >
+                    <h3 class="font-bold uppercase text-2xl mb-4 text-center">
+                        Our Story
+                    </h3>
+                    <p class="font-mono text-sm text-center">
+                        We’re a student-run operation that blends craft coffee
+                        with purpose.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teams -->
+        <section class="py-20 px-6 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Team 1 -->
+                <div>
+                    <h2
+                        class="text-3xl font-bold uppercase mb-6 bg-navy text-white inline-block px-2"
+                    >
+                        Meet the Enactus Team
+                    </h2>
+                    <ul class="border-hard bg-white">
+                        <li
+                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
+                        >
+                            <span class="w-2 h-2 bg-slate mr-4"></span>Office
+                            coffee & pastry catering
+                        </li>
+                        <li
+                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
+                        >
+                            <span class="w-2 h-2 bg-slate mr-4"></span>Tabling
+                            coffee & middle campus events
+                        </li>
+                        <li class="p-4 font-mono text-sm flex items-center">
+                            <span class="w-2 h-2 bg-slate mr-4"></span>Evening
+                            espresso carts
+                        </li>
+                    </ul>
+                </div>
+                <!-- Team 2 -->
+                <div>
+                    <h2
+                        class="text-3xl font-bold uppercase mb-6 bg-mist text-navy inline-block px-2 border border-navy"
+                    >
+                        Meet the Brew Crew
+                    </h2>
+                    <ul class="border-hard bg-white">
+                        <li
+                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
+                        >
+                            <span
+                                class="w-2 h-2 bg-mist border border-navy mr-4"
+                            ></span
+                            >Office coffee & pastry catering
+                        </li>
+                        <li
+                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
+                        >
+                            <span
+                                class="w-2 h-2 bg-mist border border-navy mr-4"
+                            ></span
+                            >Tabling coffee & middle campus events
+                        </li>
+                        <li class="p-4 font-mono text-sm flex items-center">
+                            <span
+                                class="w-2 h-2 bg-mist border border-navy mr-4"
+                            ></span
+                            >Evening espresso carts
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+    </body>
+</html>

@@ -1,17 +1,401 @@
----
-
----
-
+<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | Home</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                            "hard-hover": "1px 1px 0px 0px #152433",
+                        },
+                        animation: {
+                            marquee: "marquee 25s linear infinite",
+                        },
+                        keyframes: {
+                            marquee: {
+                                "0%": { transform: "translateX(0%)" },
+                                "100%": { transform: "translateX(-100%)" },
+                            },
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            .text-stroke {
+                -webkit-text-stroke: 1px #152433;
+                color: transparent;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-fog text-navy font-sans antialiased selection:bg-slate selection:text-white"
+    >
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors bg-mist"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Menu</a
+                    >
+                    <a
+                        href="/about"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >About</a
+                    >
+                    <a
+                        href="/contact"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Contact</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <header
+            class="relative h-[85vh] border-b-4 border-navy overflow-hidden group"
+        >
+            <!-- Video -->
+            <video
+                autoplay
+                loop
+                muted
+                playsinline
+                class="absolute inset-0 w-full h-full object-cover grayscale opacity-30 mix-blend-multiply"
+            >
+                <source
+                    src="https://brewvita.my.canva.site/_assets/video/ec431399006ad81e6ebcc0943ef03ac6.mp4"
+                    type="video/mp4"
+                />
+            </video>
+            <!-- Grid Pattern Overlay -->
+            <div
+                class="absolute inset-0 bg-[linear-gradient(rgba(21,36,51,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(21,36,51,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"
+            ></div>
+
+            <div
+                class="relative z-10 h-full flex flex-col justify-center px-6 md:px-12 max-w-7xl mx-auto pointer-events-none"
+            >
+                <span
+                    class="bg-navy text-mist inline-block px-3 py-1 font-mono text-xs w-max mb-6 border-2 border-mist shadow-hard transform -rotate-1"
+                    >BY STUDENTS, FOR STUDENTS.</span
+                >
+                <h1
+                    class="text-7xl md:text-9xl font-bold uppercase leading-[0.85] tracking-tight text-navy mix-blend-hard-light"
+                >
+                    Brewvita<br />Coffee Co.
+                </h1>
+                <div class="mt-10 pointer-events-auto">
+                    <a
+                        href="/order"
+                        class="inline-block bg-mist text-navy border-hard px-10 py-5 font-bold text-lg uppercase shadow-hard hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-hard-hover transition-all"
+                    >
+                        Order Online
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Marquee -->
+        <div
+            class="bg-navy text-mist py-4 border-b-4 border-navy font-mono font-bold uppercase text-lg overflow-hidden whitespace-nowrap"
+        >
+            <div class="inline-block animate-marquee">
+                /// OPEN 7AM–5PM /// CLOSED SUNDAYS /// LOCATED IN GREEN HALL
+                /// SUPPORT STUDENT LEADERSHIP /// OPEN 7AM–5PM /// CLOSED
+                SUNDAYS /// LOCATED IN GREEN HALL /// SUPPORT STUDENT LEADERSHIP
+            </div>
+            <div class="inline-block animate-marquee" aria-hidden="true">
+                /// OPEN 7AM–5PM /// CLOSED SUNDAYS /// LOCATED IN GREEN HALL
+                /// SUPPORT STUDENT LEADERSHIP /// OPEN 7AM–5PM /// CLOSED
+                SUNDAYS /// LOCATED IN GREEN HALL /// SUPPORT STUDENT LEADERSHIP
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <section
+            class="grid grid-cols-1 md:grid-cols-3 border-b-4 border-navy bg-white"
+        >
+            <!-- 1 -->
+            <div
+                class="p-10 border-b-4 md:border-b-0 md:border-r-4 border-navy hover:bg-mist transition-colors group"
+            >
+                <div
+                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
+                >
+                    "
+                </div>
+                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
+                    Brewvita is my go-to between classes. Fast service, great
+                    espresso, and the baristas always remember my order.
+                </p>
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-navy"></div>
+                    <strong class="text-xs uppercase tracking-widest"
+                        >Kian Graham</strong
+                    >
+                </div>
+            </div>
+            <!-- 2 -->
+            <div
+                class="p-10 border-b-4 md:border-b-0 md:border-r-4 border-navy hover:bg-mist transition-colors group"
+            >
+                <div
+                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
+                >
+                    "
+                </div>
+                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
+                    The seasonal drinks are actually creative, not just sweet.
+                    The honey oat latte is a must.
+                </p>
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-slate"></div>
+                    <strong class="text-xs uppercase tracking-widest"
+                        >Celine Guajardo</strong
+                    >
+                </div>
+            </div>
+            <!-- 3 -->
+            <div class="p-10 hover:bg-mist transition-colors group">
+                <div
+                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
+                >
+                    "
+                </div>
+                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
+                    I love that every cup supports student leadership. Great
+                    coffee with a purpose makes it even better.
+                </p>
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 bg-steel"></div>
+                    <strong class="text-xs uppercase tracking-widest"
+                        >Harlow Martin</strong
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- Products & Info -->
+        <section
+            class="grid grid-cols-1 lg:grid-cols-12 min-h-[600px] border-b-4 border-navy"
+        >
+            <!-- Products Left -->
+            <div
+                class="lg:col-span-5 bg-navy text-fog p-12 flex flex-col justify-between border-b-4 lg:border-b-0 lg:border-r-4 border-navy relative overflow-hidden"
+            >
+                <div
+                    class="absolute top-0 right-0 p-4 opacity-10 font-bold text-9xl leading-none select-none"
+                >
+                    B
+                </div>
+                <div>
+                    <h2 class="text-5xl font-bold uppercase mb-8 leading-none">
+                        Our<br />Products
+                    </h2>
+                    <div class="space-y-6 font-mono text-lg">
+                        <p class="opacity-80">
+                            There is no better way to show someone you care
+                            about them than a free coffee!
+                        </p>
+                        <div class="h-px w-full bg-slate"></div>
+                        <p class="opacity-80">
+                            Buy our coffee beans at the Grid on Liberty’s
+                            campus.
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-12">
+                    <a
+                        href="#"
+                        class="inline-block w-full text-center bg-mist text-navy border-hard px-8 py-4 font-bold uppercase hover:bg-white transition-colors"
+                    >
+                        Shop Now
+                    </a>
+                    <div
+                        class="mt-4 flex gap-4 text-xs font-mono uppercase tracking-widest text-slate"
+                    >
+                        <span>• Gift Cards</span>
+                        <span>• Closed Coffee</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Closed Coffee Right -->
+            <div
+                class="lg:col-span-7 p-12 bg-white flex flex-col justify-center relative"
+            >
+                <div
+                    class="absolute top-6 right-6 font-mono text-xs border border-navy px-2 py-1 uppercase"
+                >
+                    Mission Focused
+                </div>
+
+                <h2
+                    class="text-4xl md:text-5xl font-bold uppercase mb-8 text-navy"
+                >
+                    What is
+                    <span class="text-transparent text-stroke"
+                        >Closed Coffee?</span
+                    >
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="font-mono text-sm leading-relaxed space-y-4">
+                        <p>
+                            The X Family grows coffee in a country closed to
+                            Christianity. Every bag of Closed Coffee supports
+                            their mission to share Christ’s love and gospel
+                            where His name cannot be spoken.
+                        </p>
+                        <p>
+                            Buy Closed Coffee beans at the Montview Market,
+                            previously the Grid, located in Green Hall of
+                            Liberty University.
+                        </p>
+                    </div>
+                    <div class="bg-slate p-1">
+                        <img
+                            src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                            alt="Coffee Sack"
+                            class="w-full h-full object-cover grayscale mix-blend-luminosity border-2 border-white"
+                        />
+                    </div>
+                </div>
+                <div
+                    class="mt-8 pt-6 border-t-2 border-navy border-dashed font-bold font-mono"
+                >
+                    WE ONLY BREW THE BEST.
+                </div>
+            </div>
+        </section>
+
+        <!-- Lotus Energy (Break Section) -->
+        <section class="bg-mist border-b-4 border-navy relative">
+            <div
+                class="absolute inset-y-0 left-0 md:left-1/2 w-4 border-x-4 border-navy bg-stripes bg-white hidden md:block"
+            ></div>
+            <div class="grid grid-cols-1 md:grid-cols-2">
+                <div
+                    class="p-12 md:p-20 flex items-center justify-center border-b-4 md:border-b-0 border-navy bg-slate overflow-hidden relative"
+                >
+                    <div
+                        class="absolute inset-0 bg-[radial-gradient(circle,rgba(42,61,82,0)_2px,#2a3d52_3px)] bg-[size:20px_20px] opacity-20"
+                    ></div>
+                    <img
+                        src="/lotus.webp"
+                        class="relative z-10 w-64 h-64 rounded-full border-4 border-fog shadow-hard object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                    />
+                </div>
+                <div class="p-12 md:p-20 flex flex-col justify-center">
+                    <h2 class="text-4xl font-bold uppercase mb-6">
+                        Lotus Energy Drinks
+                    </h2>
+                    <div class="bg-navy w-16 h-2 mb-6"></div>
+                    <p class="font-mono text-sm mb-4">
+                        Our speciality energy drinks are a plant-powered secret.
+                        Their caffeine naturally comes from the berry juice of
+                        coffee beans.
+                    </p>
+                    <p class="font-mono text-sm">
+                        The drinks feature natural colors from fruits such as
+                        beets, blackberries, and blueberries.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Get Involved / Footer Hero -->
+        <section class="py-24 px-6 bg-fog relative overflow-hidden">
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <h2
+                    class="text-6xl md:text-8xl font-bold uppercase mb-8 text-navy tracking-tight"
+                >
+                    Get Involved
+                </h2>
+                <p class="font-mono text-lg max-w-2xl mx-auto mb-12">
+                    We want to connect with you! Check out the opportunities for
+                    you to get involved with Brewvita and join our community.
+                </p>
+
+                <div class="flex flex-wrap justify-center gap-4 mb-16">
+                    <a
+                        href="/application"
+                        class="px-6 py-3 border-hard bg-white hover:bg-navy hover:text-white transition-colors font-bold uppercase text-sm shadow-hard hover:shadow-hard-hover hover:translate-x-[3px] hover:translate-y-[3px]"
+                        >Application</a
+                    >
+                    <a
+                        href="/suggestion"
+                        class="px-6 py-3 border-hard bg-white hover:bg-navy hover:text-white transition-colors font-bold uppercase text-sm shadow-hard hover:shadow-hard-hover hover:translate-x-[3px] hover:translate-y-[3px]"
+                        >Drink Suggestion</a
+                    >
+                    <a
+                        href="https://groupme.com/join_group/109529495/AAfO8L3b"
+                        class="px-6 py-3 border-hard bg-white hover:bg-navy hover:text-white transition-colors font-bold uppercase text-sm shadow-hard hover:shadow-hard-hover hover:translate-x-[3px] hover:translate-y-[3px]"
+                        >Join Enactus</a
+                    >
+                    <a
+                        href="https://www.instagram.com/brewvita/?hl=en"
+                        class="px-6 py-3 border-hard bg-white hover:bg-navy hover:text-white transition-colors font-bold uppercase text-sm shadow-hard hover:shadow-hard-hover hover:translate-x-[3px] hover:translate-y-[3px]"
+                        >Instagram</a
+                    >
+                </div>
+
+                <div
+                    class="font-mono text-xs uppercase tracking-widest text-slate"
+                >
+                    <p>Follow us on social media</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simple Footer -->
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+    </body>
 </html>

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | Contact</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            details > summary {
+                list-style: none;
+            }
+            details > summary::-webkit-details-marker {
+                display: none;
+            }
+        </style>
+    </head>
+    <body class="bg-fog text-navy font-sans antialiased">
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Menu</a
+                    >
+                    <a
+                        href="/about"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >About</a
+                    >
+                    <a
+                        href="/contact"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors bg-mist"
+                        >Contact</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Intro -->
+        <section class="py-24 px-6 bg-white border-b-4 border-navy">
+            <div class="max-w-5xl mx-auto text-center">
+                <h1 class="text-6xl md:text-8xl font-bold uppercase mb-6">
+                    Reach Out
+                </h1>
+                <p class="font-mono text-xl text-slate max-w-2xl mx-auto">
+                    Connect with Brewvita Coffee Co. We’d love to hear from you.
+                </p>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen">
+            <!-- Left: Events -->
+            <div
+                class="lg:col-span-7 p-12 md:p-16 border-b-4 lg:border-b-0 lg:border-r-4 border-navy bg-fog"
+            >
+                <h2
+                    class="text-4xl font-bold uppercase mb-10 border-b-4 border-navy inline-block"
+                >
+                    Upcoming Events
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Event 1 -->
+                    <div class="flex border-hard bg-white shadow-hard">
+                        <div
+                            class="bg-navy text-white p-4 flex flex-col items-center justify-center w-24 border-r-4 border-navy"
+                        >
+                            <span class="font-bold text-xl block">9/13</span>
+                        </div>
+                        <div class="p-6 flex items-center">
+                            <span class="font-mono font-bold uppercase text-lg"
+                                >Brew Blue Day</span
+                            >
+                        </div>
+                    </div>
+                    <!-- Event 2 -->
+                    <div class="flex border-hard bg-white shadow-hard">
+                        <div
+                            class="bg-navy text-white p-4 flex flex-col items-center justify-center w-24 border-r-4 border-navy"
+                        >
+                            <span class="font-bold text-xl block">9/30</span>
+                        </div>
+                        <div class="p-6 flex items-center">
+                            <span class="font-mono font-bold uppercase text-lg"
+                                >Taste Test</span
+                            >
+                        </div>
+                    </div>
+                    <!-- Event 3 -->
+                    <div class="flex border-hard bg-white shadow-hard">
+                        <div
+                            class="bg-navy text-white p-4 flex flex-col items-center justify-center w-24 border-r-4 border-navy"
+                        >
+                            <span class="font-bold text-xl block">10/10</span>
+                        </div>
+                        <div class="p-6 flex items-center">
+                            <span class="font-mono font-bold uppercase text-lg"
+                                >Brew Launch</span
+                            >
+                        </div>
+                    </div>
+                    <!-- Event 4 -->
+                    <div class="flex border-hard bg-white shadow-hard">
+                        <div
+                            class="bg-slate text-mist p-4 flex flex-col items-center justify-center w-24 border-r-4 border-navy"
+                        >
+                            <span class="font-bold text-xl block">4/27</span>
+                        </div>
+                        <div class="p-6 flex items-center">
+                            <span
+                                class="font-mono font-bold uppercase text-lg text-slate"
+                                >The Music</span
+                            >
+                        </div>
+                    </div>
+                    <!-- Event 5 -->
+                    <div class="flex border-hard bg-white shadow-hard">
+                        <div
+                            class="bg-slate text-mist p-4 flex flex-col items-center justify-center w-24 border-r-4 border-navy"
+                        >
+                            <span class="font-bold text-xl block">5/7</span>
+                        </div>
+                        <div class="p-6 flex items-center">
+                            <span
+                                class="font-mono font-bold uppercase text-lg text-slate"
+                                >End of Year</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: FAQs -->
+            <div class="lg:col-span-5 p-12 md:p-16 bg-white">
+                <h2 class="text-4xl font-bold uppercase mb-10 text-slate">
+                    FAQs
+                </h2>
+
+                <div class="space-y-6">
+                    <!-- FAQ 1 -->
+                    <details class="group cursor-pointer">
+                        <summary
+                            class="flex items-center justify-between border-b-2 border-navy pb-4"
+                        >
+                            <span class="font-bold uppercase pr-4"
+                                >What payment is accepted?</span
+                            >
+                            <span
+                                class="text-xl group-open:rotate-45 transition-transform"
+                                >+</span
+                            >
+                        </summary>
+                        <div class="pt-4 pb-2 font-mono text-sm text-slate">
+                            We accept most major cards and mobile pay.
+                        </div>
+                    </details>
+                    <!-- FAQ 2 -->
+                    <details class="group cursor-pointer">
+                        <summary
+                            class="flex items-center justify-between border-b-2 border-navy pb-4"
+                        >
+                            <span class="font-bold uppercase pr-4"
+                                >What if I don’t like coffee?</span
+                            >
+                            <span
+                                class="text-xl group-open:rotate-45 transition-transform"
+                                >+</span
+                            >
+                        </summary>
+                        <div class="pt-4 pb-2 font-mono text-sm text-slate">
+                            We offer teas, energy drinks, and seasonal options.
+                        </div>
+                    </details>
+                    <!-- FAQ 3 -->
+                    <details class="group cursor-pointer">
+                        <summary
+                            class="flex items-center justify-between border-b-2 border-navy pb-4"
+                        >
+                            <span class="font-bold uppercase pr-4"
+                                >Is it okay for freshmen?</span
+                            >
+                            <span
+                                class="text-xl group-open:rotate-45 transition-transform"
+                                >+</span
+                            >
+                        </summary>
+                        <div class="pt-4 pb-2 font-mono text-sm text-slate">
+                            All are welcome—stop by and join the community.
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Get Involved Mini -->
+                <div class="mt-20 border-hard p-8 bg-mist">
+                    <h3 class="font-bold uppercase mb-4">Get Involved</h3>
+                    <p class="font-mono text-sm mb-6">
+                        We are a social enterprise dedicated to supporting
+                        students. Follow us on social media.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <a
+                            href="#"
+                            class="text-xs uppercase font-bold border-2 border-navy px-3 py-2 bg-white hover:bg-navy hover:text-white transition-colors"
+                            >Application</a
+                        >
+                        <a
+                            href="https://groupme.com/join_group/109529495/AAfO8L3b"
+                            class="text-xs uppercase font-bold border-2 border-navy px-3 py-2 bg-white hover:bg-navy hover:text-white transition-colors"
+                            >Join Enactus</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+    </body>
+</html>

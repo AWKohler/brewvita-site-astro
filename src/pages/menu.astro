@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | Menu</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            .dotted-leader {
+                background-image: linear-gradient(
+                    to right,
+                    #152433 33%,
+                    rgba(255, 255, 255, 0) 0%
+                );
+                background-position: bottom;
+                background-size: 6px 1px;
+                background-repeat: repeat-x;
+            }
+            /* Hide scrollbar for clean look */
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        </style>
+    </head>
+    <body class="bg-fog text-navy font-sans antialiased">
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors bg-mist"
+                        >Menu</a
+                    >
+                    <a
+                        href="/order"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors text-navy"
+                        >Order Online</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Menu Hero -->
+        <header class="bg-slate text-mist py-16 px-6 border-b-4 border-navy">
+            <div class="max-w-6xl mx-auto text-center">
+                <h1
+                    class="text-6xl md:text-8xl font-bold uppercase mb-6 tracking-tighter"
+                >
+                    Full<br />Menu
+                </h1>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <div
+                        class="inline-block bg-navy text-white px-4 py-2 font-mono text-sm border-2 border-mist shadow-hard transform -rotate-1"
+                    >
+                        OPEN 7AM–5PM
+                    </div>
+                    <a
+                        href="https://maps.app.goo.gl/4rkpRXLoWZDdXqoa6"
+                        class="inline-block bg-mist text-navy px-4 py-2 font-mono text-sm border-2 border-navy shadow-hard transform rotate-1 hover:bg-white transition-colors"
+                    >
+                        LOCATED IN GREEN HALL
+                    </a>
+                </div>
+                <div class="mt-10">
+                    <a
+                        href="/order"
+                        class="inline-block bg-mist text-navy border-hard px-8 py-3 font-bold uppercase hover:bg-white transition-colors shadow-hard hover:translate-x-1 hover:translate-y-1 hover:shadow-none"
+                    >
+                        Start Mobile Order
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Receipt Style Menu -->
+        <section class="py-16 px-4 md:px-6 max-w-4xl mx-auto">
+            <div class="bg-white border-hard p-6 md:p-12 shadow-hard relative">
+                <!-- Hole punch detail -->
+                <div
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 md:w-8 md:h-8 rounded-full bg-fog border-hard"
+                ></div>
+
+                <div class="text-center mb-10">
+                    <h2
+                        class="text-3xl md:text-5xl font-bold uppercase border-b-4 border-double border-navy pb-4 inline-block px-8"
+                    >
+                        Offerings
+                    </h2>
+                    <p class="font-mono text-xs uppercase mt-2 text-slate">
+                        Prices vary by size (Sm / Med / Lg)
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
+                    <!-- Happy Love Month -->
+                    <div class="col-span-1 md:col-span-2">
+                        <h3
+                            class="font-mono font-bold uppercase text-xl mb-6 bg-mist inline-block px-2 border-2 border-navy text-navy"
+                        >
+                            Happy Love Month
+                        </h3>
+                        <div
+                            class="space-y-6 font-mono text-sm md:text-base uppercase"
+                        >
+                            <!-- Items generated from JSON -->
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Stupid Cupid</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$6.40 - $7.40</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    dirty cherry chai
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Secret Admirer</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$5.30 - $6.30</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    marshmallow cookie butter latte
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">XOXO</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$5.30 - $6.30</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    honey brown sugar latte with cinnamon powder
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Candy-Gram</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$6.05 - $7.05</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    strawberry coconut matcha
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Love Struck</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$3.25 - $7.75</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    pink lotus with strawberry watermelon and
+                                    glitter
+                                </p>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Tiramisu</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$6.90 - $7.90</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case mt-1">
+                                    vanilla cold brew with cinnamon foam and
+                                    cinnamon powder
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Espresso Drinks -->
+                    <div>
+                        <h3
+                            class="font-mono font-bold uppercase text-lg mb-4 text-navy border-b-2 border-navy inline-block"
+                        >
+                            Espresso Drinks
+                        </h3>
+                        <div class="space-y-4 font-mono text-sm uppercase">
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Americano</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$4.50+</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Cappuccino</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$4.50+</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Caramel Macchiato</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$5.25+</span>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Cortado</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$5.50</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case">
+                                    8oz drink - 4 shots espresso/milk
+                                </p>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Latte</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$4.50+</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Mocha</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$5.25+</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <span class="font-bold">Cold Brew</span
+                                ><span
+                                    class="flex-1 mx-2 h-4 dotted-leader"
+                                ></span
+                                ><span>$5.00+</span>
+                            </div>
+                            <div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Frothy Coffee</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$4.50+</span>
+                                </div>
+                                <p class="text-xs text-slate normal-case">
+                                    Shaken Espresso
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 Wrapper -->
+                    <div class="space-y-10">
+                        <!-- Cold Brews -->
+                        <div>
+                            <h3
+                                class="font-mono font-bold uppercase text-lg mb-4 text-navy border-b-2 border-navy inline-block"
+                            >
+                                Specialty Cold Brews
+                            </h3>
+                            <div class="space-y-4 font-mono text-sm uppercase">
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Salted Caramel</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$6.90+</span>
+                                </div>
+                                <div>
+                                    <div class="flex items-end justify-between">
+                                        <span class="font-bold">Smooches</span
+                                        ><span
+                                            class="flex-1 mx-2 h-4 dotted-leader"
+                                        ></span
+                                        ><span>$6.90+</span>
+                                    </div>
+                                    <p class="text-xs text-slate normal-case">
+                                        Strawberry Cold Foam
+                                    </p>
+                                </div>
+                                <div>
+                                    <div class="flex items-end justify-between">
+                                        <span class="font-bold"
+                                            >Raspberry Truffle</span
+                                        ><span
+                                            class="flex-1 mx-2 h-4 dotted-leader"
+                                        ></span
+                                        ><span>$6.90+</span>
+                                    </div>
+                                    <p class="text-xs text-slate normal-case">
+                                        Raspberry Cold Foam
+                                    </p>
+                                </div>
+                                <div>
+                                    <div class="flex items-end justify-between">
+                                        <span class="font-bold">Nutcracker</span
+                                        ><span
+                                            class="flex-1 mx-2 h-4 dotted-leader"
+                                        ></span
+                                        ><span>$6.90+</span>
+                                    </div>
+                                    <p class="text-xs text-slate normal-case">
+                                        Toffee Nut & Salted Foam
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Not Coffee -->
+                        <div>
+                            <h3
+                                class="font-mono font-bold uppercase text-lg mb-4 text-navy border-b-2 border-navy inline-block"
+                            >
+                                Not Coffee
+                            </h3>
+                            <div class="space-y-4 font-mono text-sm uppercase">
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Chai Latte</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$4.50+</span>
+                                </div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Matcha</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$5.25+</span>
+                                </div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Lemonade</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$3.00+</span>
+                                </div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Hot Chocolate</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$3.75+</span>
+                                </div>
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Iced Tea</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$3.00+</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coffee -->
+                        <div>
+                            <h3
+                                class="font-mono font-bold uppercase text-lg mb-4 text-navy border-b-2 border-navy inline-block"
+                            >
+                                Classic
+                            </h3>
+                            <div class="space-y-4 font-mono text-sm uppercase">
+                                <div class="flex items-end justify-between">
+                                    <span class="font-bold">Hot Coffee</span
+                                    ><span
+                                        class="flex-1 mx-2 h-4 dotted-leader"
+                                    ></span
+                                    ><span>$3.00+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-12 text-center pt-8 border-t-2 border-dashed border-navy/30"
+                >
+                    <img
+                        src="https://bwipjs-api.metafloor.com/?bcid=code128&text=BREWVITA&scale=2&height=10&color=152433"
+                        alt="Barcode"
+                        class="mx-auto opacity-80 h-10 mb-2"
+                    />
+                    <p class="font-mono text-[10px] uppercase text-slate">
+                        Thanks for supporting student leadership
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+    </body>
+</html>

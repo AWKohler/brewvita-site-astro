@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | Application</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                            alert: "#d93025",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                            "hard-hover": "2px 2px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            .input-hard {
+                border: 2px solid #152433;
+            }
+
+            .focus-effect:focus {
+                background-color: #ffffff;
+                box-shadow: 4px 4px 0px 0px #152433;
+                transform: translate(-2px, -2px);
+            }
+
+            .bg-grid {
+                background-image:
+                    linear-gradient(rgba(21, 36, 51, 0.1) 1px, transparent 1px),
+                    linear-gradient(
+                        90deg,
+                        rgba(21, 36, 51, 0.1) 1px,
+                        transparent 1px
+                    );
+                background-size: 20px 20px;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-fog text-navy font-sans antialiased min-h-screen flex flex-col"
+    >
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Menu</a
+                    >
+                    <a
+                        href="/about"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >About</a
+                    >
+                    <a
+                        href="/contact"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Contact</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main
+            class="flex-grow bg-grid py-12 px-4 md:px-6 flex items-center justify-center"
+        >
+            <div class="w-full max-w-2xl">
+                <!-- Form Container -->
+                <div class="bg-white border-hard shadow-hard relative">
+                    <!-- Badge -->
+                    <div
+                        class="absolute -top-5 left-4 bg-mist text-navy px-2 py-1.5 font-mono text-xs uppercase leading-tight border-2 border-navy shadow-[2px_2px_0px_#152433]"
+                    >
+                        Join The Team
+                    </div>
+
+                    <div id="form-wrapper">
+                        <!-- Header -->
+                        <div
+                            class="bg-mist p-8 md:p-10 border-b-4 border-navy relative overflow-hidden"
+                        >
+                            <div class="absolute top-0 right-0 p-4 opacity-10">
+                                <svg
+                                    class="w-24 h-24 text-navy"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                    />
+                                </svg>
+                            </div>
+                            <h1
+                                class="text-3xl md:text-5xl font-bold uppercase text-navy mb-2 relative z-10"
+                            >
+                                Brewvita Involvement
+                            </h1>
+                            <p
+                                class="font-mono text-slate font-bold tracking-wide relative z-10 text-sm md:text-base mb-4"
+                            >
+                                Apply to be involved with Brewvita
+                            </p>
+                            <div
+                                class="text-alert font-mono text-xs uppercase font-bold relative z-10"
+                            >
+                                * Indicates required question
+                            </div>
+                        </div>
+
+                        <!-- The Form -->
+                        <form
+                            action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSd4wYbDjYJwTYwd1VgI4wf1StgVyNJnaXcxM314eqC-OZkIjg/formResponse"
+                            method="POST"
+                            id="brewvita-involvement-form"
+                            target="hidden_iframe"
+                            onsubmit="submitted=true;"
+                            class="p-8 md:p-10 space-y-8"
+                        >
+                            <!-- Question 1 -->
+                            <div class="space-y-3">
+                                <label
+                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
+                                >
+                                    What is your name (First and last)<span
+                                        class="text-alert ml-1"
+                                        >*</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    name="entry.699967240"
+                                    placeholder="Your answer"
+                                    required
+                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
+                                />
+                            </div>
+
+                            <!-- Question 2 -->
+                            <div class="space-y-3">
+                                <label
+                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
+                                >
+                                    Why would you like to work with
+                                    Brewvita?<span class="text-alert ml-1"
+                                        >*</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    name="entry.704344506"
+                                    placeholder="Your answer"
+                                    required
+                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
+                                />
+                            </div>
+
+                            <!-- Question 3 -->
+                            <div class="space-y-3">
+                                <label
+                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
+                                >
+                                    What position would you like to hold?<span
+                                        class="text-alert ml-1"
+                                        >*</span
+                                    >
+                                </label>
+                                <input
+                                    type="text"
+                                    name="entry.2077881677"
+                                    placeholder="Your answer"
+                                    required
+                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
+                                />
+                            </div>
+
+                            <!-- Submit Area -->
+                            <div
+                                class="pt-6 border-t-2 border-navy/10 flex justify-end"
+                            >
+                                <button
+                                    type="submit"
+                                    class="bg-navy text-white font-bold font-mono uppercase px-8 py-4 border-hard shadow-hard hover:bg-slate hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div
+                        id="success-message"
+                        class="hidden p-12 text-center bg-mist min-h-[400px] flex flex-col items-center justify-center"
+                    >
+                        <div
+                            class="w-20 h-20 bg-white border-hard rounded-full flex items-center justify-center mb-6 shadow-hard"
+                        >
+                            <svg
+                                class="w-10 h-10 text-navy"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="3"
+                                    d="M5 13l4 4L19 7"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h2
+                            class="text-3xl md:text-4xl font-bold uppercase text-navy mb-4"
+                        >
+                            Application<br />Submitted
+                        </h2>
+                        <p class="font-mono text-slate mb-8 max-w-sm mx-auto">
+                            Thank you for your interest in Brewvita. We will
+                            review your application shortly.
+                        </p>
+
+                        <button
+                            onclick="location.reload()"
+                            class="inline-block border-hard bg-white text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                        >
+                            Submit another response
+                        </button>
+
+                        <a
+                            href="/"
+                            class="mt-6 block font-mono text-xs underline uppercase tracking-widest hover:text-white"
+                            >Return to Home</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+
+        <!-- Hidden iframe logic -->
+        <iframe
+            name="hidden_iframe"
+            id="hidden_iframe"
+            style="display: none"
+            onload="if(submitted) { showSuccess(); }"
+        ></iframe>
+
+        <script is:inline>
+            var submitted = false;
+            function showSuccess() {
+                // Hide the form wrapper
+                document.getElementById("form-wrapper").style.display = "none";
+                // Show the success message
+                document
+                    .getElementById("success-message")
+                    .classList.remove("hidden");
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+        </script>
+    </body>
+</html>

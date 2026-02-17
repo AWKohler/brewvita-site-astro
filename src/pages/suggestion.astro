@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Brewvita Coffee Co. | Drink Suggestion</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            steel: "#2d4056",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                            "hard-hover": "2px 2px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            .input-hard {
+                border: 2px solid #152433;
+            }
+
+            /* Custom Focus State */
+            .focus-effect:focus {
+                background-color: #ffffff;
+                box-shadow: 4px 4px 0px 0px #152433;
+                transform: translate(-2px, -2px);
+            }
+
+            /* Checkered Background Pattern */
+            .bg-grid {
+                background-image:
+                    linear-gradient(rgba(21, 36, 51, 0.1) 1px, transparent 1px),
+                    linear-gradient(
+                        90deg,
+                        rgba(21, 36, 51, 0.1) 1px,
+                        transparent 1px
+                    );
+                background-size: 20px 20px;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-fog text-navy font-sans antialiased min-h-screen flex flex-col"
+    >
+        <!-- Navbar -->
+        <nav class="sticky top-0 z-50 bg-fog border-b-4 border-navy">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div
+                    class="flex items-center px-6 py-4 bg-navy text-mist border-r-4 border-navy"
+                >
+                    <a
+                        href="/"
+                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
+                    >
+                        Brewvita Coffee Co.
+                    </a>
+                </div>
+                <div class="flex-1 flex flex-wrap md:justify-end bg-fog">
+                    <a
+                        href="/"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Home</a
+                    >
+                    <a
+                        href="/menu"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Menu</a
+                    >
+                    <a
+                        href="/about"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >About</a
+                    >
+                    <a
+                        href="/contact"
+                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 md:py-0 border-b-2 md:border-b-0 md:border-l-4 border-navy font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
+                        >Contact</a
+                    >
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main
+            class="flex-grow bg-grid py-12 px-4 md:px-6 flex items-center justify-center"
+        >
+            <div class="w-full max-w-2xl">
+                <!-- Form Container -->
+                <div class="bg-white border-hard shadow-hard relative">
+                    <!-- Decorative Top Label -->
+                    <div
+                        class="absolute -top-5 left-4 bg-slate text-white px-2 py-1.5 font-mono text-xs uppercase leading-tight border-2 border-navy shadow-[2px_2px_0px_#152433]"
+                    >
+                        Community Input: LOG-002
+                    </div>
+
+                    <div id="form-wrapper">
+                        <!-- Header -->
+                        <div
+                            class="bg-slate p-8 md:p-10 border-b-4 border-navy relative overflow-hidden"
+                        >
+                            <!-- Striped Pattern Overlay -->
+                            <div
+                                class="absolute top-0 right-0 w-32 h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#b8cde6_10px,#b8cde6_12px)] opacity-20"
+                            ></div>
+
+                            <h1
+                                class="text-4xl md:text-5xl font-bold uppercase text-white mb-2 relative z-10"
+                            >
+                                Drink Suggestion
+                            </h1>
+                            <p
+                                class="font-mono text-mist font-bold uppercase tracking-wide relative z-10 text-xs md:text-sm"
+                            >
+                                Help us craft the next menu *
+                            </p>
+                        </div>
+
+                        <!-- The Google Form -->
+                        <form
+                            action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfk9FCp1RwKs1YzHDWnaDka4XJMtX5bygCRdAv3SgDTPuDdDg/formResponse"
+                            method="POST"
+                            id="suggestion-form"
+                            target="hidden_iframe"
+                            onsubmit="submitted=true;"
+                            class="p-8 md:p-10 space-y-8"
+                        >
+                            <!-- Question 1: Name -->
+                            <div class="space-y-3">
+                                <label
+                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
+                                    for="entry_name"
+                                >
+                                    What is your name?
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="entry_name"
+                                    name="entry.1894373439"
+                                    placeholder="Your Name"
+                                    required
+                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
+                                />
+                            </div>
+
+                            <!-- Question 2: Drink Idea -->
+                            <div class="space-y-3">
+                                <label
+                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
+                                    for="entry_drink"
+                                >
+                                    What drink would you like to see served?
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="entry_drink"
+                                    name="entry.1690836687"
+                                    placeholder="e.g. Lavender Honey Latte"
+                                    required
+                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
+                                />
+                            </div>
+
+                            <!-- Submit Area -->
+                            <div
+                                class="pt-6 border-t-2 border-navy/10 flex flex-col md:flex-row justify-between items-center gap-4"
+                            >
+                                <p
+                                    class="font-mono text-xs text-slate opacity-70"
+                                >
+                                    * REQUIRED FIELDS
+                                </p>
+                                <button
+                                    type="submit"
+                                    class="w-full md:w-auto bg-navy text-white font-bold font-mono uppercase px-8 py-4 border-hard shadow-hard hover:bg-slate hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200"
+                                >
+                                    Submit Idea ->
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Success Message (Hidden by default) -->
+                    <div
+                        id="success-message"
+                        class="hidden p-12 text-center bg-mist min-h-[400px] flex flex-col items-center justify-center"
+                    >
+                        <div
+                            class="w-20 h-20 bg-white border-hard flex items-center justify-center mb-6 shadow-hard rotate-3"
+                        >
+                            <svg
+                                class="w-10 h-10 text-navy"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="3"
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h2
+                            class="text-3xl md:text-4xl font-bold uppercase text-navy mb-4"
+                        >
+                            Idea<br />Logged
+                        </h2>
+                        <p class="font-mono text-slate mb-8 max-w-xs mx-auto">
+                            We've received your drink idea and added it to the
+                            review queue.
+                        </p>
+
+                        <button
+                            onclick="location.reload()"
+                            class="inline-block border-hard bg-white text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                        >
+                            Submit Another
+                        </button>
+
+                        <a
+                            href="/"
+                            class="mt-6 block font-mono text-xs underline uppercase tracking-widest hover:text-white"
+                            >Return to Home</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer
+            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
+        >
+            &copy; 2026 Brewvita Coffee Co.
+        </footer>
+
+        <!-- Hidden iframe logic -->
+        <iframe
+            name="hidden_iframe"
+            id="hidden_iframe"
+            style="display: none"
+            onload="if(submitted) { handleSuccess(); }"
+        ></iframe>
+
+        <script is:inline>
+            var submitted = false;
+            function handleSuccess() {
+                // Hide form wrapper
+                document.getElementById("form-wrapper").style.display = "none";
+                // Show success message
+                document
+                    .getElementById("success-message")
+                    .classList.remove("hidden");
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+        </script>
+    </body>
+</html>

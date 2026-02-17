@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Brewvita | Order Online</title>
+        <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <script is:inline>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            ink: "#1f2327",
+                            slate: "#2a3d52",
+                            mist: "#b8cde6",
+                            fog: "#d9e6f5",
+                            navy: "#152433",
+                            "img-bg": "#96c2e8",
+                        },
+                        fontFamily: {
+                            sans: ['"Space Grotesk"', "sans-serif"],
+                            mono: ['"Space Mono"', "monospace"],
+                        },
+                        boxShadow: {
+                            hard: "4px 4px 0px 0px #152433",
+                            "hard-sm": "2px 2px 0px 0px #152433",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .border-hard {
+                border: 3px solid #152433;
+            }
+            .hide-scroll::-webkit-scrollbar {
+                display: none;
+            }
+            .hide-scroll {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            /* Smooth category selection */
+            .category-btn.active {
+                background-color: #152433;
+                color: #b8cde6;
+                box-shadow: 2px 2px 0px 0px #1f2327;
+            }
+
+            /* Modal Animation */
+            .modal-enter {
+                transform: translateY(100%);
+            }
+            .modal-active {
+                transform: translateY(0);
+            }
+
+            /* Remove thumbnail tinting on mobile for clearer drink photos */
+            @media (max-width: 767px) {
+                .drink-thumb {
+                    mix-blend-mode: normal;
+                }
+            }
+        </style>
+    </head>
+    <body
+        class="bg-fog text-navy font-sans antialiased h-screen flex flex-col overflow-hidden"
+    >
+        <!-- Conceptual Anchor: Location Context -->
+        <div
+            class="bg-navy text-mist px-4 py-2 flex justify-between items-center text-xs font-mono border-b-4 border-slate shrink-0 z-50"
+        >
+            <div class="flex items-center gap-2">
+                <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    ></path>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                </svg>
+                <span class="uppercase tracking-wide">Pickup: Green Hall</span>
+            </div>
+            <a
+                href="/"
+                class="hover:text-white underline decoration-2 decoration-mist"
+                >Close</a
+            >
+        </div>
+
+        <!-- Product Discovery: Categories -->
+        <div
+            class="bg-white border-b-4 border-navy py-4 shrink-0 overflow-x-auto hide-scroll z-40 shadow-sm"
+        >
+            <div class="flex gap-4 px-4 min-w-max" id="category-nav">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- Main Content: Product List -->
+        <main
+            class="flex-1 overflow-y-auto pb-32 px-4 pt-6"
+            id="menu-container"
+        >
+            <!-- Populated via JS -->
+        </main>
+
+        <!-- Cart Floating Anchor (Empty State / Active State) -->
+        <div
+            id="cart-bar"
+            class="fixed bottom-0 left-0 w-full bg-white border-t-4 border-navy p-4 transform translate-y-full transition-transform duration-300 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]"
+        >
+            <div class="max-w-2xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="bg-navy text-mist w-10 h-10 flex items-center justify-center font-bold font-mono border-2 border-black"
+                        id="cart-count"
+                    >
+                        0
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs uppercase font-bold text-slate"
+                            >Current Total</span
+                        >
+                        <span
+                            class="font-mono font-bold text-lg"
+                            id="cart-total"
+                            >$0.00</span
+                        >
+                    </div>
+                </div>
+                <button
+                    class="bg-mist text-navy border-hard px-6 py-3 font-bold uppercase shadow-hard-sm active:translate-y-1 active:shadow-none transition-all"
+                >
+                    Review Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Product Detail View (Modal) -->
+        <div id="product-modal" class="fixed inset-0 z-[60] hidden">
+            <!-- Backdrop -->
+            <div
+                class="absolute inset-0 bg-navy/80 backdrop-blur-sm transition-opacity opacity-0"
+                id="modal-backdrop"
+                onclick="closeModal()"
+            ></div>
+
+            <!-- Drawer -->
+            <div
+                class="absolute inset-x-0 bottom-0 top-12 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:h-auto md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
+                id="modal-content"
+            >
+                <!-- Modal Header -->
+                <div
+                    class="flex justify-between items-center p-4 border-b-4 border-navy bg-fog shrink-0"
+                >
+                    <h3
+                        class="font-bold uppercase text-lg truncate pr-4"
+                        id="modal-title"
+                    >
+                        Product Name
+                    </h3>
+                    <button
+                        onclick="closeModal()"
+                        class="w-8 h-8 flex items-center justify-center border-2 border-navy hover:bg-navy hover:text-white transition-colors font-mono font-bold"
+                    >
+                        X
+                    </button>
+                </div>
+
+                <!-- Modal Body (Scrollable) -->
+                <div class="overflow-y-auto flex-1 p-6">
+                    <!-- Image -->
+                    <div
+                        class="w-full aspect-square bg-img-bg border-hard mb-6 relative overflow-hidden group"
+                    >
+                        <img
+                            id="modal-img"
+                            src=""
+                            alt="Drink"
+                            class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div
+                            class="absolute bottom-2 right-2 bg-white px-2 py-1 font-mono text-xs border-2 border-navy"
+                        >
+                            STUDENT FAVORITE
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <p
+                        id="modal-desc"
+                        class="font-mono text-sm text-slate mb-8 leading-relaxed"
+                    ></p>
+
+                    <!-- Configuration -->
+                    <div class="space-y-6">
+                        <!-- Size -->
+                        <div>
+                            <span
+                                class="block font-bold uppercase mb-3 text-xs tracking-widest text-slate"
+                                >Size</span
+                            >
+                            <div class="grid grid-cols-3 gap-3">
+                                <button
+                                    class="size-btn border-2 border-navy p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
+                                    data-mod="0"
+                                >
+                                    <span class="block text-lg font-bold"
+                                        >Sm</span
+                                    >
+                                </button>
+                                <button
+                                    class="size-btn border-2 border-navy p-3 font-mono text-center bg-navy text-white shadow-hard-sm"
+                                    data-mod="1.00"
+                                >
+                                    <span class="block text-lg font-bold"
+                                        >Med</span
+                                    >
+                                </button>
+                                <button
+                                    class="size-btn border-2 border-navy p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
+                                    data-mod="1.50"
+                                >
+                                    <span class="block text-lg font-bold"
+                                        >Lg</span
+                                    >
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commitment Action -->
+                <div class="p-4 border-t-4 border-navy bg-white shrink-0">
+                    <button
+                        onclick="addToOrder()"
+                        class="w-full bg-mist text-navy border-hard py-4 font-bold uppercase text-lg shadow-hard-sm hover:shadow-hard hover:-translate-y-1 transition-all flex justify-between px-8"
+                    >
+                        <span>Add to Order</span>
+                        <span id="modal-price">$0.00</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data & Logic -->
+        <script is:inline>
+            // MENU DATA -------------------------------
+            const menu = [
+                {
+                    category: "Happy Love Month",
+                    items: [
+                        {
+                            name: "Stupid Cupid",
+                            price: 6.4,
+                            desc: "Dirty cherry chai",
+                            img: "no_thumb.png",
+                        },
+                        {
+                            name: "Secret Admirer",
+                            price: 5.3,
+                            desc: "Marshmallow cookie butter latte",
+                            img: "no_thumb.png",
+                        },
+                        {
+                            name: "XOXO",
+                            price: 5.3,
+                            desc: "Honey brown sugar latte with cinnamon powder",
+                            img: "no_thumb.png",
+                        },
+                        {
+                            name: "Candy-Gram",
+                            price: 6.05,
+                            desc: "Strawberry coconut matcha",
+                            img: "no_thumb.png",
+                        },
+                        {
+                            name: "Love Struck",
+                            price: 3.25,
+                            desc: "Pink lotus with strawberry watermelon and glitter",
+                            img: "no_thumb.png",
+                        },
+                        {
+                            name: "Tiramisu",
+                            price: 6.9,
+                            desc: "Vanilla cold brew with cinnamon foam and cinnamon powder",
+                            img: "no_thumb.png",
+                        },
+                    ],
+                },
+                {
+                    category: "Espresso Drinks",
+                    items: [
+                        {
+                            name: "Americano",
+                            price: 4.5,
+                            desc: "Espresso and hot water",
+                            img: "americano.png",
+                        },
+                        {
+                            name: "Cappuccino",
+                            price: 4.5,
+                            desc: "Equal parts espresso, steamed milk, and milk foam",
+                            img: "cappuccino.png",
+                        },
+                        {
+                            name: "Caramel Macchiato",
+                            price: 5.25,
+                            desc: "Espresso with vanilla syrup, milk, and caramel drizzle",
+                            img: "caramel_macchiato.png",
+                        },
+                        {
+                            name: "Cortado",
+                            price: 5.5,
+                            desc: "8oz drink - 4 shots of espresso and 4 shots of milk",
+                            img: "cortado.png",
+                        },
+                        {
+                            name: "Latte",
+                            price: 4.5,
+                            desc: "Espresso with steamed milk and a light layer of foam",
+                            img: "latte.png",
+                        },
+                        {
+                            name: "Mocha",
+                            price: 5.25,
+                            desc: "Espresso, bittersweet mocha sauce and steamed milk",
+                            img: "mocha.png",
+                        },
+                        {
+                            name: "Cold Brew",
+                            price: 5.0,
+                            desc: "Slow-steeped coffee",
+                            img: "cold_brew.png",
+                        },
+                        {
+                            name: "Frothy Coffee",
+                            price: 4.5,
+                            desc: "A shaken espresso",
+                            img: "frothy_coffee.png",
+                        },
+                    ],
+                },
+                {
+                    category: "Cold Brews",
+                    items: [
+                        {
+                            name: "Salted Caramel Cold Brew",
+                            price: 6.9,
+                            desc: "Cold brew with salted caramel",
+                            img: "salted_caramel_cream_cold_brew.png",
+                        },
+                        {
+                            name: "Smooches",
+                            price: 6.9,
+                            desc: "Cold Brew with white mocha and vanilla topped with strawberry cold foam",
+                            img: "smooches.png",
+                        },
+                        {
+                            name: "Raspberry Truffle",
+                            price: 6.9,
+                            desc: "Cold brew with white mocha and vanilla topped with raspberry cold foam",
+                            img: "raspberry_truffle.png",
+                        },
+                        {
+                            name: "Nutcracker",
+                            price: 6.9,
+                            desc: "Toffee nut cold brew with salted foam and caramel drizzle",
+                            img: "nutcracker.png",
+                        },
+                    ],
+                },
+                {
+                    category: "Not Coffee",
+                    items: [
+                        {
+                            name: "Chai Latte",
+                            price: 4.5,
+                            desc: "Black tea infused with cinnamon, clove and other warming spices",
+                            img: "chai_latte.png",
+                        },
+                        {
+                            name: "Matcha",
+                            price: 5.25,
+                            desc: "Sweetened matcha green tea",
+                            img: "matcha.png",
+                        },
+                        {
+                            name: "Lemonade",
+                            price: 3.0,
+                            desc: "Refreshing lemonade",
+                            img: "lemonade.png",
+                        },
+                        {
+                            name: "Hot Chocolate",
+                            price: 3.75,
+                            desc: "Steamed milk with vanilla- and mocha-flavored syrups",
+                            img: "hot_chocolate.png",
+                        },
+                        {
+                            name: "Iced Tea",
+                            price: 3.0,
+                            desc: "Black iced tea",
+                            img: "iced_tea.png",
+                        },
+                    ],
+                },
+                {
+                    category: "Coffee",
+                    items: [
+                        {
+                            name: "Hot Coffee",
+                            price: 3.0,
+                            desc: "Freshly brewed daily blend",
+                            img: "hot_coffee.png",
+                        },
+                    ],
+                },
+            ];
+
+            // STATE -----------------------------------
+            let currentItem = null;
+            let cart = [];
+            let basePrice = 0;
+            let sizeMod = 1.0; // Default to Medium
+
+            // DOM ELEMENTS ----------------------------
+            const nav = document.getElementById("category-nav");
+            const main = document.getElementById("menu-container");
+            const modal = document.getElementById("product-modal");
+            const backdrop = document.getElementById("modal-backdrop");
+            const modalContent = document.getElementById("modal-content");
+
+            // INIT ------------------------------------
+            function init() {
+                renderNav();
+                renderMenu();
+            }
+
+            function renderNav() {
+                nav.innerHTML = menu
+                    .map(
+                        (cat, index) => `
+                <button onclick="scrollToCategory('cat-${index}')" class="category-btn border-2 border-navy px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm" : "text-navy"}">
+                    ${cat.category}
+                </button>
+            `,
+                    )
+                    .join("");
+            }
+
+            function renderMenu() {
+                main.innerHTML = menu
+                    .map(
+                        (cat, index) => `
+                <div id="cat-${index}" class="mb-12 scroll-mt-6">
+                    <h2 class="font-bold text-2xl uppercase mb-6 border-b-4 border-navy inline-block text-navy">${cat.category}</h2>
+                    <div class="space-y-4">
+                        ${cat.items
+                            .map(
+                                (item) => `
+                            <div onclick="openModal('${item.name}')" class="group bg-white border-hard p-4 flex gap-4 cursor-pointer active:bg-fog transition-colors shadow-sm hover:shadow-hard-sm">
+                                <div class="w-20 h-20 bg-img-bg border-2 border-navy shrink-0 p-1">
+                                    <img src="/coffee/${item.img}" class="w-full h-full object-contain" onerror="this.src='/coffee/no_thumb.png'">
+                                </div>
+                                <div class="flex flex-col justify-center flex-1 min-w-0">
+                                    <h3 class="font-bold text-lg leading-tight mb-1 truncate">${item.name}</h3>
+                                    <p class="font-mono text-xs text-slate truncate">${item.desc || "Brewvita Favorite"}</p>
+                                    <div class="mt-2 font-mono text-sm font-bold">$${item.price.toFixed(2)}</div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <button class="w-8 h-8 rounded-none border-2 border-navy bg-mist flex items-center justify-center font-bold text-lg group-hover:bg-navy group-hover:text-mist transition-colors">+</button>
+                                </div>
+                            </div>
+                        `,
+                            )
+                            .join("")}
+                    </div>
+                </div>
+            `,
+                    )
+                    .join("");
+            }
+
+            function scrollToCategory(id) {
+                document
+                    .getElementById(id)
+                    .scrollIntoView({ behavior: "smooth" });
+            }
+
+            // MODAL LOGIC -----------------------------
+            window.openModal = function (itemName) {
+                // Find item
+                let found = null;
+                menu.forEach((c) =>
+                    c.items.forEach((i) => {
+                        if (i.name === itemName) found = i;
+                    }),
+                );
+                if (!found) return;
+
+                currentItem = found;
+                basePrice = found.price;
+                sizeMod = 1.0; // Reset to Medium
+
+                // Update UI
+                document.getElementById("modal-title").innerText = found.name;
+                document.getElementById("modal-desc").innerText =
+                    found.desc || "A delicious Brewvita classic.";
+                document.getElementById("modal-img").src =
+                    `/coffee/${found.img}`;
+                document.getElementById("modal-img").onerror = function () {
+                    this.src = "/coffee/no_thumb.png";
+                };
+
+                // Reset Size Buttons visual state
+                document.querySelectorAll(".size-btn").forEach((btn) => {
+                    btn.classList.remove(
+                        "bg-navy",
+                        "text-white",
+                        "shadow-hard-sm",
+                    );
+                    if (btn.dataset.mod === "1.00") {
+                        btn.classList.add(
+                            "bg-navy",
+                            "text-white",
+                            "shadow-hard-sm",
+                        );
+                    }
+                });
+
+                updatePrice();
+
+                // Show
+                modal.classList.remove("hidden");
+                setTimeout(() => {
+                    backdrop.classList.remove("opacity-0");
+                    modalContent.classList.remove(
+                        "translate-y-full",
+                        "scale-95",
+                        "opacity-0",
+                    );
+                }, 10);
+            };
+
+            window.closeModal = function () {
+                backdrop.classList.add("opacity-0");
+                modalContent.classList.add(
+                    "translate-y-full",
+                    "scale-95",
+                    "opacity-0",
+                );
+                setTimeout(() => {
+                    modal.classList.add("hidden");
+                }, 300);
+            };
+
+            // Configuration Logic
+            document.querySelectorAll(".size-btn").forEach((btn) => {
+                btn.addEventListener("click", function () {
+                    // Remove active classes
+                    document
+                        .querySelectorAll(".size-btn")
+                        .forEach((b) =>
+                            b.classList.remove(
+                                "bg-navy",
+                                "text-white",
+                                "shadow-hard-sm",
+                            ),
+                        );
+                    // Add to clicked
+                    this.classList.add(
+                        "bg-navy",
+                        "text-white",
+                        "shadow-hard-sm",
+                    );
+                    // Update state
+                    sizeMod = parseFloat(this.dataset.mod);
+                    updatePrice();
+                });
+            });
+
+            function updatePrice() {
+                const final = basePrice + sizeMod;
+                document.getElementById("modal-price").innerText =
+                    `$${final.toFixed(2)}`;
+            }
+
+            window.addToOrder = function () {
+                const finalPrice = basePrice + sizeMod;
+                cart.push({
+                    item: currentItem.name,
+                    price: finalPrice,
+                });
+                updateCartUI();
+                closeModal();
+            };
+
+            function updateCartUI() {
+                const count = cart.length;
+                const total = cart.reduce((acc, curr) => acc + curr.price, 0);
+
+                document.getElementById("cart-count").innerText = count;
+                document.getElementById("cart-total").innerText =
+                    `$${total.toFixed(2)}`;
+
+                if (count > 0) {
+                    document
+                        .getElementById("cart-bar")
+                        .classList.remove("translate-y-full");
+                }
+            }
+
+            // Run
+            init();
+        </script>
+    </body>
+</html>
