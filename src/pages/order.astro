@@ -149,7 +149,7 @@
                     </div>
                 </div>
                 <button
-                    class="bg-mist text-navy border-hard px-6 py-3 font-bold uppercase shadow-hard-sm active:translate-y-1 active:shadow-none transition-all"
+                    class="bg-mist text-navy border-hard rounded-full px-6 py-3 font-bold uppercase shadow-hard-sm active:translate-y-1 active:shadow-none transition-all"
                 >
                     Review Order
                 </button>
@@ -223,7 +223,7 @@
                             >
                             <div class="grid grid-cols-3 gap-3">
                                 <button
-                                    class="size-btn border-2 border-navy p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
+                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
                                     data-mod="0"
                                 >
                                     <span class="block text-lg font-bold"
@@ -231,7 +231,7 @@
                                     >
                                 </button>
                                 <button
-                                    class="size-btn border-2 border-navy p-3 font-mono text-center bg-navy text-white shadow-hard-sm"
+                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center bg-navy text-white shadow-hard-sm"
                                     data-mod="1.00"
                                 >
                                     <span class="block text-lg font-bold"
@@ -239,7 +239,7 @@
                                     >
                                 </button>
                                 <button
-                                    class="size-btn border-2 border-navy p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
+                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
                                     data-mod="1.50"
                                 >
                                     <span class="block text-lg font-bold"
@@ -255,7 +255,7 @@
                 <div class="p-4 border-t-4 border-navy bg-white shrink-0">
                     <button
                         onclick="addToOrder()"
-                        class="w-full bg-mist text-navy border-hard py-4 font-bold uppercase text-lg shadow-hard-sm hover:shadow-hard hover:-translate-y-1 transition-all flex justify-between px-8"
+                        class="w-full bg-mist text-navy border-hard rounded-full py-4 font-bold uppercase text-lg shadow-hard-sm hover:shadow-hard hover:-translate-y-1 transition-all flex justify-between px-8"
                     >
                         <span>Add to Order</span>
                         <span id="modal-price">$0.00</span>
@@ -462,7 +462,7 @@
                 nav.innerHTML = menu
                     .map(
                         (cat, index) => `
-                <button onclick="scrollToCategory('cat-${index}')" class="category-btn border-2 border-navy px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm" : "text-navy"}">
+                <button onclick="scrollToCategory('cat-${index}')" class="category-btn border-2 border-navy rounded-full px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm" : "text-navy"}">
                     ${cat.category}
                 </button>
             `,
@@ -490,7 +490,7 @@
                                     <div class="mt-2 font-mono text-sm font-bold">$${item.price.toFixed(2)}</div>
                                 </div>
                                 <div class="flex items-center justify-center">
-                                    <button class="w-8 h-8 rounded-none border-2 border-navy bg-mist flex items-center justify-center font-bold text-lg group-hover:bg-navy group-hover:text-mist transition-colors">+</button>
+                                    <button class="w-8 h-8 rounded-full border-2 border-navy bg-mist flex items-center justify-center font-bold text-lg group-hover:bg-navy group-hover:text-mist transition-colors">+</button>
                                 </div>
                             </div>
                         `,
