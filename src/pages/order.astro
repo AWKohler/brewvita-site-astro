@@ -1,3 +1,233 @@
+---
+const SQUARE_VERSION = "2025-10-16";
+const squareEnvironment = (
+    import.meta.env.SQUARE_ENVIRONMENT || "sandbox"
+).toLowerCase();
+const isProductionSquare = squareEnvironment === "production";
+const SQUARE_API_BASE = isProductionSquare
+    ? "https://connect.squareup.com"
+    : "https://connect.squareupsandbox.com";
+const FALLBACK_IMAGE = "/coffee/no_thumb.png";
+
+const squareAccessToken = import.meta.env.SQUARE_ACCESS_TOKEN;
+const squareApplicationId =
+    import.meta.env.SQUARE_APP_ID || import.meta.env.PUBLIC_SQUARE_APP_ID || "";
+const configuredLocationId = import.meta.env.SQUARE_LOCATION_ID;
+const squareJsUrl = isProductionSquare
+    ? "https://web.squarecdn.com/v1/square.js"
+    : "https://sandbox.web.squarecdn.com/v1/square.js";
+
+function isPresentAtLocation(catalogObject, locationId) {
+    if (!catalogObject || !locationId) return true;
+
+    const presentAtAll = catalogObject.present_at_all_locations ?? true;
+    const presentIds = catalogObject.present_at_location_ids ?? [];
+    const absentIds = catalogObject.absent_at_location_ids ?? [];
+
+    if (absentIds.includes(locationId)) return false;
+    if (presentAtAll) return true;
+    return presentIds.includes(locationId);
+}
+
+function amountToDollars(amount) {
+    return (Number(amount ?? 0) || 0) / 100;
+}
+
+async function squareRequest(path, options = {}) {
+    if (!squareAccessToken) {
+        throw new Error(
+            "Missing SQUARE_ACCESS_TOKEN. Configure it in your environment.",
+        );
+    }
+
+    const response = await fetch(`${SQUARE_API_BASE}${path}`, {
+        ...options,
+        headers: {
+            Authorization: `Bearer ${squareAccessToken}`,
+            "Content-Type": "application/json",
+            "Square-Version": SQUARE_VERSION,
+            ...(options.headers ?? {}),
+        },
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+        const apiErrors = payload?.errors
+            ?.map((error) => error?.detail || error?.code)
+            ?.filter(Boolean)
+            ?.join(", ");
+        throw new Error(apiErrors || `Square API error (${response.status})`);
+    }
+
+    return payload;
+}
+
+async function resolveLocationId() {
+    if (configuredLocationId) return configuredLocationId;
+
+    const locationsPayload = await squareRequest("/v2/locations");
+    const activeLocation = (locationsPayload.locations || []).find(
+        (location) => location.status === "ACTIVE",
+    );
+    return activeLocation?.id || null;
+}
+
+async function fetchCatalogObjects() {
+    const objects = [];
+    const relatedObjects = [];
+
+    let cursor = null;
+    do {
+        const payload = await squareRequest("/v2/catalog/search", {
+            method: "POST",
+            body: JSON.stringify({
+                object_types: ["ITEM"],
+                include_related_objects: true,
+                limit: 100,
+                ...(cursor ? { cursor } : {}),
+            }),
+        });
+
+        if (payload.objects?.length) objects.push(...payload.objects);
+        if (payload.related_objects?.length) {
+            relatedObjects.push(...payload.related_objects);
+        }
+
+        cursor = payload.cursor || null;
+    } while (cursor);
+
+    return { objects, relatedObjects };
+}
+
+function normalizeMenuFromCatalog(catalogObjects, relatedCatalogObjects, locationId) {
+    const allObjects = [...catalogObjects, ...relatedCatalogObjects];
+    const categoriesById = new Map();
+    const imagesById = new Map();
+    const modifierListsById = new Map();
+
+    for (const object of allObjects) {
+        if (object.type === "CATEGORY") {
+            categoriesById.set(
+                object.id,
+                object.category_data?.name || "Uncategorized",
+            );
+        }
+        if (object.type === "IMAGE") {
+            imagesById.set(object.id, object.image_data?.url || FALLBACK_IMAGE);
+        }
+        if (object.type === "MODIFIER_LIST") {
+            modifierListsById.set(object.id, object.modifier_list_data || {});
+        }
+    }
+
+    const groupedByCategory = new Map();
+
+    for (const itemObject of catalogObjects) {
+        if (itemObject.type !== "ITEM") continue;
+        if (!isPresentAtLocation(itemObject, locationId)) continue;
+
+        const itemData = itemObject.item_data || {};
+        const variations = (itemData.variations || []).filter(
+            (variation) =>
+                variation.type === "ITEM_VARIATION" &&
+                isPresentAtLocation(variation, locationId),
+        );
+        if (!variations.length) continue;
+
+        const primaryVariation =
+            variations.find(
+                (variation) =>
+                    variation.item_variation_data?.pricing_type === "FIXED_PRICING",
+            ) || variations[0];
+        const variationData = primaryVariation.item_variation_data || {};
+
+        const basePrice = amountToDollars(variationData.price_money?.amount);
+        const categoryId =
+            itemData.category_id || itemData.categories?.[0]?.id || null;
+        const categoryName =
+            (categoryId && categoriesById.get(categoryId)) || "Uncategorized";
+
+        const imageId =
+            itemData.image_ids?.[0] ||
+            itemData.image_id ||
+            variationData.image_ids?.[0] ||
+            variationData.image_id ||
+            null;
+        const imageUrl = (imageId && imagesById.get(imageId)) || FALLBACK_IMAGE;
+
+        const sizeListInfo = (itemData.modifier_list_info || []).find((listInfo) => {
+            const listData = modifierListsById.get(listInfo.modifier_list_id);
+            const listName = (listData?.name || "").toLowerCase();
+            return listName === "size";
+        });
+
+        const sizeListData = sizeListInfo
+            ? modifierListsById.get(sizeListInfo.modifier_list_id)
+            : null;
+
+        let sizeOptions = (sizeListData?.modifiers || [])
+            .filter((modifier) => isPresentAtLocation(modifier, locationId))
+            .map((modifier) => ({
+                id: modifier.id,
+                name: modifier.modifier_data?.name || "Option",
+                priceAdjustment: amountToDollars(
+                    modifier.modifier_data?.price_money?.amount,
+                ),
+                onByDefault: Boolean(modifier.modifier_data?.on_by_default),
+                sourceType: "MODIFIER",
+            }));
+
+        if (!sizeOptions.length && variations.length > 1) {
+            sizeOptions = variations.map((variation) => {
+                const variationPrice = amountToDollars(
+                    variation.item_variation_data?.price_money?.amount,
+                );
+                return {
+                    id: variation.id,
+                    variationId: variation.id,
+                    name: variation.item_variation_data?.name || "Option",
+                    priceAdjustment: variationPrice - basePrice,
+                    onByDefault: variation.id === primaryVariation.id,
+                    sourceType: "VARIATION",
+                };
+            });
+        }
+
+        const item = {
+            id: itemObject.id,
+            name: itemData.name || "Unnamed Item",
+            price: basePrice,
+            desc: itemData.description || "",
+            img: imageUrl,
+            variationId: primaryVariation.id,
+            sizeOptions,
+        };
+
+        if (!groupedByCategory.has(categoryName)) {
+            groupedByCategory.set(categoryName, []);
+        }
+        groupedByCategory.get(categoryName).push(item);
+    }
+
+    return Array.from(groupedByCategory.entries()).map(([category, items]) => ({
+        category,
+        items,
+    }));
+}
+
+let squareLocationId = configuredLocationId || null;
+let menu = [];
+let menuLoadError = "";
+
+try {
+    squareLocationId = await resolveLocationId();
+    const { objects, relatedObjects } = await fetchCatalogObjects();
+    menu = normalizeMenuFromCatalog(objects, relatedObjects, squareLocationId);
+} catch (error) {
+    menuLoadError =
+        error instanceof Error ? error.message : "Unable to load menu.";
+}
+---
 <!doctype html>
 <html lang="en">
     <head>
@@ -9,6 +239,7 @@
         <title>Brewvita | Order Online</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <script src={squareJsUrl}></script>
         <link
             href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
             rel="stylesheet"
@@ -150,10 +381,76 @@
                     </div>
                 </div>
                 <button
+                    id="review-order-btn"
                     class="bg-mist text-navy border-hard rounded-full px-6 py-3 font-bold uppercase shadow-hard-sm active:translate-y-1 active:shadow-none transition-all"
                 >
                     Review Order
                 </button>
+            </div>
+        </div>
+
+        <!-- Checkout Drawer -->
+        <div id="checkout-modal" class="fixed inset-0 z-[70] hidden">
+            <div
+                id="checkout-backdrop"
+                class="absolute inset-0 bg-navy/80 backdrop-blur-sm transition-opacity opacity-0"
+            ></div>
+            <div
+                id="checkout-content"
+                class="absolute inset-x-0 bottom-0 top-8 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
+            >
+                <div class="flex justify-between items-center p-4 border-b-4 border-navy bg-fog shrink-0">
+                    <h3 class="font-bold uppercase text-lg">Checkout</h3>
+                    <button
+                        id="checkout-close-btn"
+                        class="w-8 h-8 flex items-center justify-center border-2 border-navy hover:bg-navy hover:text-white transition-colors font-mono font-bold"
+                    >
+                        X
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto flex-1 p-6 space-y-6">
+                    <div>
+                        <h4 class="font-bold uppercase text-xs tracking-widest text-slate mb-3">
+                            Order Summary
+                        </h4>
+                        <div id="checkout-items" class="space-y-2"></div>
+                        <div class="flex justify-between items-center border-t-2 border-navy mt-4 pt-3">
+                            <span class="font-bold uppercase text-sm">Total</span>
+                            <span id="checkout-total" class="font-mono font-bold text-lg">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="font-bold uppercase text-xs tracking-widest text-slate">
+                            Payment Card
+                        </h4>
+                        <input
+                            id="checkout-email"
+                            type="email"
+                            placeholder="Email for receipt (optional)"
+                            class="w-full border-2 border-navy px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-mist"
+                        />
+                        <div
+                            id="card-container"
+                            class="border-hard p-3 min-h-20 bg-fog"
+                        ></div>
+                        <p id="sandbox-card-hint" class="font-mono text-xs text-slate hidden">
+                            Sandbox card: 4111 1111 1111 1111, CVV 111, any future date.
+                        </p>
+                        <p id="checkout-status" class="font-mono text-xs text-slate"></p>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t-4 border-navy bg-white shrink-0">
+                    <button
+                        id="pay-now-btn"
+                        class="w-full bg-mist text-navy border-hard rounded-full py-4 font-bold uppercase text-lg shadow-hard-sm hover:shadow-hard hover:-translate-y-1 transition-all flex justify-between px-8"
+                    >
+                        <span>Pay Now</span>
+                        <span id="pay-now-total">$0.00</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -222,32 +519,7 @@
                                 class="block font-bold uppercase mb-3 text-xs tracking-widest text-slate"
                                 >Size</span
                             >
-                            <div class="grid grid-cols-3 gap-3">
-                                <button
-                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
-                                    data-mod="0"
-                                >
-                                    <span class="block text-lg font-bold"
-                                        >Sm</span
-                                    >
-                                </button>
-                                <button
-                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center bg-navy text-white shadow-hard-sm"
-                                    data-mod="1.00"
-                                >
-                                    <span class="block text-lg font-bold"
-                                        >Med</span
-                                    >
-                                </button>
-                                <button
-                                    class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors"
-                                    data-mod="1.50"
-                                >
-                                    <span class="block text-lg font-bold"
-                                        >Lg</span
-                                    >
-                                </button>
-                            </div>
+                            <div class="grid grid-cols-3 gap-3" id="size-options"></div>
                         </div>
                     </div>
                 </div>
@@ -266,185 +538,70 @@
         </div>
 
         <!-- Data & Logic -->
-        <script is:inline>
-            // MENU DATA -------------------------------
-            const menu = [
-                {
-                    category: "Happy Love Month",
-                    items: [
-                        {
-                            name: "Stupid Cupid",
-                            price: 6.4,
-                            desc: "Dirty cherry chai",
-                            img: "no_thumb.png",
-                        },
-                        {
-                            name: "Secret Admirer",
-                            price: 5.3,
-                            desc: "Marshmallow cookie butter latte",
-                            img: "no_thumb.png",
-                        },
-                        {
-                            name: "XOXO",
-                            price: 5.3,
-                            desc: "Honey brown sugar latte with cinnamon powder",
-                            img: "no_thumb.png",
-                        },
-                        {
-                            name: "Candy-Gram",
-                            price: 6.05,
-                            desc: "Strawberry coconut matcha",
-                            img: "no_thumb.png",
-                        },
-                        {
-                            name: "Love Struck",
-                            price: 3.25,
-                            desc: "Pink lotus with strawberry watermelon and glitter",
-                            img: "no_thumb.png",
-                        },
-                        {
-                            name: "Tiramisu",
-                            price: 6.9,
-                            desc: "Vanilla cold brew with cinnamon foam and cinnamon powder",
-                            img: "no_thumb.png",
-                        },
-                    ],
-                },
-                {
-                    category: "Espresso Drinks",
-                    items: [
-                        {
-                            name: "Americano",
-                            price: 4.5,
-                            desc: "Espresso and hot water",
-                            img: "americano.png",
-                        },
-                        {
-                            name: "Cappuccino",
-                            price: 4.5,
-                            desc: "Equal parts espresso, steamed milk, and milk foam",
-                            img: "cappuccino.png",
-                        },
-                        {
-                            name: "Caramel Macchiato",
-                            price: 5.25,
-                            desc: "Espresso with vanilla syrup, milk, and caramel drizzle",
-                            img: "caramel_macchiato.png",
-                        },
-                        {
-                            name: "Cortado",
-                            price: 5.5,
-                            desc: "8oz drink - 4 shots of espresso and 4 shots of milk",
-                            img: "cortado.png",
-                        },
-                        {
-                            name: "Latte",
-                            price: 4.5,
-                            desc: "Espresso with steamed milk and a light layer of foam",
-                            img: "latte.png",
-                        },
-                        {
-                            name: "Mocha",
-                            price: 5.25,
-                            desc: "Espresso, bittersweet mocha sauce and steamed milk",
-                            img: "mocha.png",
-                        },
-                        {
-                            name: "Cold Brew",
-                            price: 5.0,
-                            desc: "Slow-steeped coffee",
-                            img: "cold_brew.png",
-                        },
-                        {
-                            name: "Frothy Coffee",
-                            price: 4.5,
-                            desc: "A shaken espresso",
-                            img: "frothy_coffee.png",
-                        },
-                    ],
-                },
-                {
-                    category: "Cold Brews",
-                    items: [
-                        {
-                            name: "Salted Caramel Cold Brew",
-                            price: 6.9,
-                            desc: "Cold brew with salted caramel",
-                            img: "salted_caramel_cream_cold_brew.png",
-                        },
-                        {
-                            name: "Smooches",
-                            price: 6.9,
-                            desc: "Cold Brew with white mocha and vanilla topped with strawberry cold foam",
-                            img: "smooches.png",
-                        },
-                        {
-                            name: "Raspberry Truffle",
-                            price: 6.9,
-                            desc: "Cold brew with white mocha and vanilla topped with raspberry cold foam",
-                            img: "raspberry_truffle.png",
-                        },
-                        {
-                            name: "Nutcracker",
-                            price: 6.9,
-                            desc: "Toffee nut cold brew with salted foam and caramel drizzle",
-                            img: "nutcracker.png",
-                        },
-                    ],
-                },
-                {
-                    category: "Not Coffee",
-                    items: [
-                        {
-                            name: "Chai Latte",
-                            price: 4.5,
-                            desc: "Black tea infused with cinnamon, clove and other warming spices",
-                            img: "chai_latte.png",
-                        },
-                        {
-                            name: "Matcha",
-                            price: 5.25,
-                            desc: "Sweetened matcha green tea",
-                            img: "matcha.png",
-                        },
-                        {
-                            name: "Lemonade",
-                            price: 3.0,
-                            desc: "Refreshing lemonade",
-                            img: "lemonade.png",
-                        },
-                        {
-                            name: "Hot Chocolate",
-                            price: 3.75,
-                            desc: "Steamed milk with vanilla- and mocha-flavored syrups",
-                            img: "hot_chocolate.png",
-                        },
-                        {
-                            name: "Iced Tea",
-                            price: 3.0,
-                            desc: "Black iced tea",
-                            img: "iced_tea.png",
-                        },
-                    ],
-                },
-                {
-                    category: "Coffee",
-                    items: [
-                        {
-                            name: "Hot Coffee",
-                            price: 3.0,
-                            desc: "Freshly brewed daily blend",
-                            img: "hot_coffee.png",
-                        },
-                    ],
-                },
-            ];
-
+        <script
+            define:vars={{
+                menu,
+                menuLoadError,
+                squareApplicationId,
+                squareLocationId,
+                squareEnvironment,
+            }}
+            is:inline
+        >
             // STATE -----------------------------------
             let currentItem = null;
             let cart = [];
             let basePrice = 0;
-            let sizeMod = 1.0; // Default to Medium
+            let currentSizeOptions = [];
+            let selectedSizeOption = null;
+            let checkoutCard = null;
+            let checkoutCardReady = false;
+            let paymentSubmitting = false;
+            const squareCardStyle = {
+                input: {
+                    backgroundColor: "#d9e6f5",
+                    color: "#152433",
+                },
+                "input::placeholder": {
+                    color: "#2a3d52",
+                },
+                "input.is-focus": {
+                    color: "#152433",
+                },
+                "input.is-error": {
+                    color: "#1f2327",
+                },
+                ".input-container": {
+                    borderColor: "#152433",
+                    borderRadius: "0px",
+                    borderWidth: "3px",
+                },
+                ".input-container.is-focus": {
+                    borderColor: "#152433",
+                    borderWidth: "3px",
+                },
+                ".input-container.is-error": {
+                    borderColor: "#1f2327",
+                    borderWidth: "3px",
+                },
+                ".message-text": {
+                    color: "#2a3d52",
+                },
+                ".message-text.is-error": {
+                    color: "#1f2327",
+                },
+                ".message-icon": {
+                    color: "#2a3d52",
+                },
+                ".message-icon.is-error": {
+                    color: "#1f2327",
+                },
+            };
+            const itemById = new Map(
+                menu.flatMap((category) =>
+                    category.items.map((item) => [item.id, item]),
+                ),
+            );
 
             // DOM ELEMENTS ----------------------------
             const nav = document.getElementById("category-nav");
@@ -452,18 +609,41 @@
             const modal = document.getElementById("product-modal");
             const backdrop = document.getElementById("modal-backdrop");
             const modalContent = document.getElementById("modal-content");
+            const sizeOptionsContainer =
+                document.getElementById("size-options");
+            const reviewOrderButton =
+                document.getElementById("review-order-btn");
+            const checkoutModal = document.getElementById("checkout-modal");
+            const checkoutBackdrop =
+                document.getElementById("checkout-backdrop");
+            const checkoutContent = document.getElementById("checkout-content");
+            const checkoutCloseButton =
+                document.getElementById("checkout-close-btn");
+            const checkoutItems = document.getElementById("checkout-items");
+            const checkoutTotal = document.getElementById("checkout-total");
+            const payNowTotal = document.getElementById("pay-now-total");
+            const payNowButton = document.getElementById("pay-now-btn");
+            const checkoutStatus = document.getElementById("checkout-status");
+            const checkoutEmail = document.getElementById("checkout-email");
+            const sandboxCardHint = document.getElementById("sandbox-card-hint");
 
             // INIT ------------------------------------
             function init() {
                 renderNav();
                 renderMenu();
+                attachEvents();
             }
 
             function renderNav() {
+                if (!menu.length) {
+                    nav.innerHTML = "";
+                    return;
+                }
+
                 nav.innerHTML = menu
                     .map(
                         (cat, index) => `
-                <button onclick="scrollToCategory('cat-${index}')" class="category-btn border-2 border-navy rounded-full px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm" : "text-navy"}">
+                <button data-target="cat-${index}" class="category-btn border-2 border-navy rounded-full px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm active" : "text-navy"}">
                     ${cat.category}
                 </button>
             `,
@@ -472,6 +652,16 @@
             }
 
             function renderMenu() {
+                if (!menu.length) {
+                    main.innerHTML = `
+                        <div class="bg-white border-hard p-6 shadow-sm">
+                            <h2 class="font-bold text-xl uppercase mb-2 text-navy">Menu Unavailable</h2>
+                            <p class="font-mono text-xs text-slate">${menuLoadError || "No catalog items found for this location yet."}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
                 main.innerHTML = menu
                     .map(
                         (cat, index) => `
@@ -481,9 +671,9 @@
                         ${cat.items
                             .map(
                                 (item) => `
-                            <div onclick="openModal('${item.name}')" class="group bg-white border-hard p-4 flex gap-4 cursor-pointer active:bg-fog transition-colors shadow-sm hover:shadow-hard-sm">
+                            <div data-item-id="${item.id}" class="menu-item group bg-white border-hard p-4 flex gap-4 cursor-pointer active:bg-fog transition-colors shadow-sm hover:shadow-hard-sm">
                                 <div class="w-20 h-20 bg-img-bg border-2 border-navy shrink-0 p-1">
-                                    <img src="/coffee/${item.img}" class="w-full h-full object-contain" onerror="this.src='/coffee/no_thumb.png'">
+                                    <img src="${item.img}" class="w-full h-full object-contain drink-thumb" onerror="this.src='/coffee/no_thumb.png'">
                                 </div>
                                 <div class="flex flex-col justify-center flex-1 min-w-0">
                                     <h3 class="font-bold text-lg leading-tight mb-1 truncate">${item.name}</h3>
@@ -504,6 +694,65 @@
                     .join("");
             }
 
+            function attachEvents() {
+                nav.addEventListener("click", (event) => {
+                    const target = event.target.closest("button[data-target]");
+                    if (!target) return;
+
+                    document.querySelectorAll(".category-btn").forEach((button) => {
+                        button.classList.remove(
+                            "bg-navy",
+                            "text-mist",
+                            "shadow-hard-sm",
+                            "active",
+                        );
+                        button.classList.add("text-navy");
+                    });
+
+                    target.classList.add(
+                        "bg-navy",
+                        "text-mist",
+                        "shadow-hard-sm",
+                        "active",
+                    );
+                    target.classList.remove("text-navy");
+
+                    scrollToCategory(target.dataset.target);
+                });
+
+                main.addEventListener("click", (event) => {
+                    const menuItem = event.target.closest(".menu-item");
+                    if (!menuItem) return;
+                    const itemId = menuItem.dataset.itemId;
+                    if (!itemId) return;
+                    openModal(itemId);
+                });
+
+                sizeOptionsContainer.addEventListener("click", (event) => {
+                    const button = event.target.closest(".size-btn");
+                    if (!button) return;
+
+                    const optionIndex = Number(button.dataset.optionIndex);
+                    selectedSizeOption = currentSizeOptions[optionIndex] || null;
+
+                    document.querySelectorAll(".size-btn").forEach((sizeButton) => {
+                        sizeButton.classList.remove(
+                            "bg-navy",
+                            "text-white",
+                            "shadow-hard-sm",
+                        );
+                    });
+                    button.classList.add("bg-navy", "text-white", "shadow-hard-sm");
+
+                    updatePrice();
+                });
+
+                reviewOrderButton?.addEventListener("click", openCheckoutModal);
+                checkoutCloseButton?.addEventListener("click", closeCheckoutModal);
+                checkoutBackdrop?.addEventListener("click", closeCheckoutModal);
+                payNowButton?.addEventListener("click", submitPayment);
+            }
+
             function scrollToCategory(id) {
                 document
                     .getElementById(id)
@@ -511,45 +760,67 @@
             }
 
             // MODAL LOGIC -----------------------------
-            window.openModal = function (itemName) {
-                // Find item
-                let found = null;
-                menu.forEach((c) =>
-                    c.items.forEach((i) => {
-                        if (i.name === itemName) found = i;
-                    }),
+            function getDefaultSizeOption(options) {
+                if (!options.length) return null;
+                return (
+                    options.find((option) => option.onByDefault) ||
+                    options.find((option) => /med/i.test(option.name)) ||
+                    options[0]
                 );
+            }
+
+            function renderSizeOptions(item) {
+                currentSizeOptions =
+                    item.sizeOptions?.length > 0
+                        ? item.sizeOptions
+                        : [
+                              {
+                                  id: null,
+                                  name: "Standard",
+                                  priceAdjustment: 0,
+                                  onByDefault: true,
+                              },
+                          ];
+
+                selectedSizeOption = getDefaultSizeOption(currentSizeOptions);
+
+                sizeOptionsContainer.innerHTML = currentSizeOptions
+                    .map((option, index) => {
+                        const isSelected =
+                            selectedSizeOption &&
+                            selectedSizeOption.name === option.name &&
+                            selectedSizeOption.priceAdjustment ===
+                                option.priceAdjustment;
+
+                        return `
+                            <button
+                                class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors ${isSelected ? "bg-navy text-white shadow-hard-sm" : ""}"
+                                data-option-index="${index}"
+                            >
+                                <span class="block text-lg font-bold">${option.name}</span>
+                            </button>
+                        `;
+                    })
+                    .join("");
+            }
+
+            window.openModal = function (itemId) {
+                const found = itemById.get(itemId);
                 if (!found) return;
 
                 currentItem = found;
                 basePrice = found.price;
-                sizeMod = 1.0; // Reset to Medium
 
                 // Update UI
                 document.getElementById("modal-title").innerText = found.name;
                 document.getElementById("modal-desc").innerText =
                     found.desc || "A delicious Brewvita classic.";
-                document.getElementById("modal-img").src =
-                    `/coffee/${found.img}`;
+                document.getElementById("modal-img").src = found.img;
                 document.getElementById("modal-img").onerror = function () {
                     this.src = "/coffee/no_thumb.png";
                 };
 
-                // Reset Size Buttons visual state
-                document.querySelectorAll(".size-btn").forEach((btn) => {
-                    btn.classList.remove(
-                        "bg-navy",
-                        "text-white",
-                        "shadow-hard-sm",
-                    );
-                    if (btn.dataset.mod === "1.00") {
-                        btn.classList.add(
-                            "bg-navy",
-                            "text-white",
-                            "shadow-hard-sm",
-                        );
-                    }
-                });
+                renderSizeOptions(found);
 
                 updatePrice();
 
@@ -577,41 +848,255 @@
                 }, 300);
             };
 
-            // Configuration Logic
-            document.querySelectorAll(".size-btn").forEach((btn) => {
-                btn.addEventListener("click", function () {
-                    // Remove active classes
-                    document
-                        .querySelectorAll(".size-btn")
-                        .forEach((b) =>
-                            b.classList.remove(
-                                "bg-navy",
-                                "text-white",
-                                "shadow-hard-sm",
-                            ),
-                        );
-                    // Add to clicked
-                    this.classList.add(
-                        "bg-navy",
-                        "text-white",
-                        "shadow-hard-sm",
-                    );
-                    // Update state
-                    sizeMod = parseFloat(this.dataset.mod);
-                    updatePrice();
-                });
-            });
-
             function updatePrice() {
-                const final = basePrice + sizeMod;
+                const final = basePrice + (selectedSizeOption?.priceAdjustment || 0);
                 document.getElementById("modal-price").innerText =
                     `$${final.toFixed(2)}`;
             }
 
+            function getCartTotal() {
+                return cart.reduce((acc, line) => acc + Number(line.price || 0), 0);
+            }
+
+            function setCheckoutStatus(message, isError = false) {
+                if (!checkoutStatus) return;
+                checkoutStatus.innerText = message || "";
+                checkoutStatus.classList.toggle("text-red-700", Boolean(message && isError));
+                checkoutStatus.classList.toggle("text-green-700", Boolean(message && !isError));
+                checkoutStatus.classList.toggle("text-slate", !message);
+            }
+
+            function setPayNowLoading(isLoading) {
+                if (!payNowButton) return;
+
+                paymentSubmitting = isLoading;
+                payNowButton.disabled = isLoading;
+                const buttonLabel = payNowButton.querySelector("span");
+                if (buttonLabel) {
+                    buttonLabel.innerText = isLoading ? "Processing..." : "Pay Now";
+                }
+                payNowButton.classList.toggle("opacity-70", isLoading);
+                payNowButton.classList.toggle("cursor-not-allowed", isLoading);
+            }
+
+            function renderCheckoutSummary() {
+                const grouped = new Map();
+
+                cart.forEach((line) => {
+                    const modifierKey = Array.isArray(line.modifier_catalog_object_ids)
+                        ? [...line.modifier_catalog_object_ids].sort().join(",")
+                        : "";
+                    const key = `${line.catalog_object_id || ""}::${modifierKey}`;
+                    const existing = grouped.get(key);
+                    if (existing) {
+                        existing.quantity += Number(line.quantity || 1);
+                        existing.total += Number(line.price || 0);
+                        return;
+                    }
+
+                    grouped.set(key, {
+                        label: line.display_name || line.name || "Item",
+                        quantity: Number(line.quantity || 1),
+                        total: Number(line.price || 0),
+                    });
+                });
+
+                const rows = Array.from(grouped.values());
+                if (!rows.length) {
+                    checkoutItems.innerHTML = `
+                        <div class="bg-fog border-2 border-navy px-3 py-2 font-mono text-xs text-slate">
+                            Your cart is empty.
+                        </div>
+                    `;
+                } else {
+                    checkoutItems.innerHTML = rows
+                        .map(
+                            (row) => `
+                                <div class="bg-fog border-2 border-navy px-3 py-2 flex justify-between items-center gap-3">
+                                    <div class="min-w-0">
+                                        <p class="font-bold text-sm truncate">${row.label}</p>
+                                        <p class="font-mono text-xs text-slate">Qty ${row.quantity}</p>
+                                    </div>
+                                    <p class="font-mono font-bold text-sm">$${row.total.toFixed(2)}</p>
+                                </div>
+                            `,
+                        )
+                        .join("");
+                }
+
+                const total = getCartTotal();
+                checkoutTotal.innerText = `$${total.toFixed(2)}`;
+                payNowTotal.innerText = `$${total.toFixed(2)}`;
+            }
+
+            async function ensureCardReady() {
+                if (checkoutCardReady) return true;
+                if (!squareApplicationId || !squareLocationId) {
+                    setCheckoutStatus(
+                        "Square app ID or location ID is missing. Check environment keys.",
+                        true,
+                    );
+                    return false;
+                }
+                if (!window.Square || typeof window.Square.payments !== "function") {
+                    setCheckoutStatus(
+                        "Square payment form failed to load. Refresh and try again.",
+                        true,
+                    );
+                    return false;
+                }
+
+                try {
+                    const payments = window.Square.payments(
+                        squareApplicationId,
+                        squareLocationId,
+                    );
+                    checkoutCard = await payments.card({
+                        style: squareCardStyle,
+                    });
+                    await checkoutCard.attach("#card-container");
+                    checkoutCardReady = true;
+                    setCheckoutStatus("");
+                    return true;
+                } catch (error) {
+                    setCheckoutStatus(
+                        error instanceof Error
+                            ? error.message
+                            : "Unable to initialize payment form.",
+                        true,
+                    );
+                    return false;
+                }
+            }
+
+            async function openCheckoutModal() {
+                if (!cart.length) {
+                    window.alert("Add at least one item before checking out.");
+                    return;
+                }
+
+                renderCheckoutSummary();
+                setCheckoutStatus("");
+                sandboxCardHint?.classList.toggle(
+                    "hidden",
+                    squareEnvironment === "production",
+                );
+
+                checkoutModal.classList.remove("hidden");
+                setTimeout(() => {
+                    checkoutBackdrop.classList.remove("opacity-0");
+                    checkoutContent.classList.remove(
+                        "translate-y-full",
+                        "scale-95",
+                        "opacity-0",
+                    );
+                }, 10);
+
+                await ensureCardReady();
+            }
+
+            function closeCheckoutModal() {
+                checkoutBackdrop.classList.add("opacity-0");
+                checkoutContent.classList.add(
+                    "translate-y-full",
+                    "scale-95",
+                    "opacity-0",
+                );
+                setTimeout(() => {
+                    checkoutModal.classList.add("hidden");
+                }, 300);
+            }
+
+            async function submitPayment() {
+                if (paymentSubmitting) return;
+                if (!cart.length) {
+                    setCheckoutStatus("Your cart is empty.", true);
+                    return;
+                }
+
+                const cardReady = await ensureCardReady();
+                if (!cardReady || !checkoutCard) return;
+
+                setPayNowLoading(true);
+                setCheckoutStatus("");
+
+                try {
+                    const tokenResult = await checkoutCard.tokenize();
+                    if (tokenResult.status !== "OK" || !tokenResult.token) {
+                        const tokenError = tokenResult.errors?.[0];
+                        throw new Error(
+                            tokenError?.message || "Card tokenization failed.",
+                        );
+                    }
+
+                    const response = await fetch("/api/checkout", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            cart,
+                            sourceId: tokenResult.token,
+                            buyerEmailAddress: checkoutEmail?.value?.trim() || undefined,
+                        }),
+                    });
+                    const payload = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(
+                            payload?.error || "Payment failed. Please try again.",
+                        );
+                    }
+
+                    const paidAmount = Number(payload?.totalMoney?.amount);
+                    const paidDisplay = Number.isFinite(paidAmount)
+                        ? `$${(paidAmount / 100).toFixed(2)}`
+                        : checkoutTotal.innerText;
+                    setCheckoutStatus("Payment complete.", false);
+                    window.alert(
+                        `Payment complete. Order ${payload.orderId} for ${paidDisplay}.`,
+                    );
+
+                    cart = [];
+                    updateCartUI();
+                    renderCheckoutSummary();
+                    closeCheckoutModal();
+                } catch (error) {
+                    setCheckoutStatus(
+                        error instanceof Error
+                            ? error.message
+                            : "Unable to complete payment.",
+                        true,
+                    );
+                } finally {
+                    setPayNowLoading(false);
+                }
+            }
+
             window.addToOrder = function () {
-                const finalPrice = basePrice + sizeMod;
+                if (!currentItem) return;
+
+                const finalPrice =
+                    basePrice + (selectedSizeOption?.priceAdjustment || 0);
+                const modifierIds = selectedSizeOption?.id
+                    && selectedSizeOption.sourceType === "MODIFIER"
+                    ? [selectedSizeOption.id]
+                    : [];
+                const selectedVariationId =
+                    selectedSizeOption?.sourceType === "VARIATION"
+                        ? selectedSizeOption.variationId
+                        : currentItem.variationId;
+                const selectedOptionName = selectedSizeOption?.name || "";
+                const displayName =
+                    selectedOptionName && selectedOptionName !== "Standard"
+                        ? `${currentItem.name} (${selectedOptionName})`
+                        : currentItem.name;
+
                 cart.push({
-                    item: currentItem.name,
+                    name: currentItem.name,
+                    display_name: displayName,
+                    catalog_object_id: selectedVariationId,
+                    modifier_catalog_object_ids: modifierIds,
+                    quantity: 1,
                     price: finalPrice,
                 });
                 updateCartUI();
@@ -630,6 +1115,10 @@
                     document
                         .getElementById("cart-bar")
                         .classList.remove("translate-y-full");
+                } else {
+                    document
+                        .getElementById("cart-bar")
+                        .classList.add("translate-y-full");
                 }
             }
 
