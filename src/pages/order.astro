@@ -533,9 +533,9 @@ try {
                     ></p>
 
                     <!-- Configuration -->
-                    <div class="space-y-6">
+                    <div class="space-y-6" id="modal-config">
                         <!-- Size -->
-                        <div>
+                        <div id="size-section">
                             <span
                                 class="block font-bold uppercase mb-3 text-xs tracking-widest text-slate"
                                 >Size</span
@@ -647,6 +647,7 @@ try {
             const checkoutStatus = document.getElementById("checkout-status");
             const checkoutEmail = document.getElementById("checkout-email");
             const sandboxCardHint = document.getElementById("sandbox-card-hint");
+            const sizeSection = document.getElementById("size-section");
 
             // INIT ------------------------------------
             function init() {
@@ -791,17 +792,16 @@ try {
             }
 
             function renderSizeOptions(item) {
-                currentSizeOptions =
-                    item.sizeOptions?.length > 0
-                        ? item.sizeOptions
-                        : [
-                              {
-                                  id: null,
-                                  name: "Standard",
-                                  priceAdjustment: 0,
-                                  onByDefault: true,
-                              },
-                          ];
+                currentSizeOptions = item.sizeOptions?.length > 0 ? item.sizeOptions : [];
+
+                if (!currentSizeOptions.length) {
+                    selectedSizeOption = null;
+                    sizeSection?.classList.add("hidden");
+                    sizeOptionsContainer.innerHTML = "";
+                    return;
+                }
+
+                sizeSection?.classList.remove("hidden");
 
                 selectedSizeOption = getDefaultSizeOption(currentSizeOptions);
 
@@ -1073,9 +1073,11 @@ try {
                         ? `$${(paidAmount / 100).toFixed(2)}`
                         : checkoutTotal.innerText;
                     setCheckoutStatus("Payment complete.", false);
-                    window.alert(
-                        `Payment complete. Order ${payload.orderId} for ${paidDisplay}.`,
-                    );
+                    if (squareEnvironment !== "production") {
+                        window.alert(
+                            `Payment complete. Order ${payload.orderId} for ${paidDisplay}.`,
+                        );
+                    }
 
                     cart = [];
                     updateCartUI();
@@ -1108,7 +1110,7 @@ try {
                         : currentItem.variationId;
                 const selectedOptionName = selectedSizeOption?.name || "";
                 const displayName =
-                    selectedOptionName && selectedOptionName !== "Standard"
+                    selectedOptionName
                         ? `${currentItem.name} (${selectedOptionName})`
                         : currentItem.name;
 
