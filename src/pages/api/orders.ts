@@ -3,13 +3,12 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 const SQUARE_VERSION = "2025-10-16";
-const squareEnvironment = (
-    import.meta.env.SQUARE_ENVIRONMENT || "sandbox"
-).toLowerCase();
-const SQUARE_API_BASE =
-    squareEnvironment === "production"
-        ? "https://connect.squareup.com"
-        : "https://connect.squareupsandbox.com";
+
+type RuntimeLocals = {
+    runtime?: {
+        env?: Record<string, string | undefined>;
+    };
+};
 
 type IncomingCartLine = {
     catalog_object_id?: unknown;
@@ -81,13 +80,46 @@ function normalizeCartLines(cart: IncomingCartLine[]) {
     return Array.from(grouped.values());
 }
 
-async function squareRequest(path: string, init: RequestInit = {}) {
-    const squareAccessToken = import.meta.env.SQUARE_ACCESS_TOKEN;
+function getEnv(locals: RuntimeLocals | undefined, key: string) {
+    return locals?.runtime?.env?.[key] ?? import.meta.env[key];
+}
+
+function resolveSquareEnvironment(locals: RuntimeLocals | undefined) {
+    const explicitEnvironment = (getEnv(locals, "SQUARE_ENVIRONMENT") || "")
+        .toLowerCase();
+    const appId =
+        getEnv(locals, "SQUARE_APP_ID") ||
+        getEnv(locals, "PUBLIC_SQUARE_APP_ID") ||
+        "";
+    const hasSandboxAppId =
+        typeof appId === "string" &&
+        (appId.startsWith("sandbox-") || appId.includes("sq0idb-"));
+    const hasProductionAppId =
+        typeof appId === "string" && appId.includes("sq0idp-");
+
+    if (hasSandboxAppId) return "sandbox";
+    if (hasProductionAppId) return "production";
+    if (explicitEnvironment === "production") return "production";
+    return "sandbox";
+}
+
+function getSquareApiBase(locals: RuntimeLocals | undefined) {
+    return resolveSquareEnvironment(locals) === "production"
+        ? "https://connect.squareup.com"
+        : "https://connect.squareupsandbox.com";
+}
+
+async function squareRequest(
+    path: string,
+    locals: RuntimeLocals | undefined,
+    init: RequestInit = {},
+) {
+    const squareAccessToken = getEnv(locals, "SQUARE_ACCESS_TOKEN");
     if (!squareAccessToken) {
         throw new Error("Missing SQUARE_ACCESS_TOKEN.");
     }
 
-    const response = await fetch(`${SQUARE_API_BASE}${path}`, {
+    const response = await fetch(`${getSquareApiBase(locals)}${path}`, {
         ...init,
         headers: {
             Authorization: `Bearer ${squareAccessToken}`,
@@ -113,18 +145,18 @@ async function squareRequest(path: string, init: RequestInit = {}) {
     return payload;
 }
 
-async function resolveLocationId() {
-    const configured = import.meta.env.SQUARE_LOCATION_ID;
+async function resolveLocationId(locals: RuntimeLocals | undefined) {
+    const configured = getEnv(locals, "SQUARE_LOCATION_ID");
     if (configured) return configured;
 
-    const locationsPayload = await squareRequest("/v2/locations");
+    const locationsPayload = await squareRequest("/v2/locations", locals);
     const active = (locationsPayload.locations || []).find(
         (location: { status?: string }) => location.status === "ACTIVE",
     );
     return active?.id || null;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
     try {
         const body = await request.json().catch(() => null);
         const rawCart = Array.isArray(body?.cart)
@@ -139,7 +171,7 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        const locationId = await resolveLocationId();
+        const locationId = await resolveLocationId(locals);
         if (!locationId) {
             return createJsonResponse(
                 { error: "No active Square location is configured." },
@@ -168,7 +200,7 @@ export const POST: APIRoute = async ({ request }) => {
             },
         };
 
-        const squareResponse = await squareRequest("/v2/orders", {
+        const squareResponse = await squareRequest("/v2/orders", locals, {
             method: "POST",
             body: JSON.stringify(createOrderPayload),
         });

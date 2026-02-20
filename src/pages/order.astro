@@ -1,18 +1,39 @@
 ---
 const SQUARE_VERSION = "2025-10-16";
-const squareEnvironment = (
-    import.meta.env.SQUARE_ENVIRONMENT || "sandbox"
+const runtimeEnv = Astro.locals?.runtime?.env ?? {};
+const getEnv = (key) => runtimeEnv[key] ?? import.meta.env[key];
+
+const configuredSquareEnvironment = (
+    getEnv("SQUARE_ENVIRONMENT") || ""
 ).toLowerCase();
+const squareApplicationId =
+    getEnv("SQUARE_APP_ID") || getEnv("PUBLIC_SQUARE_APP_ID") || "";
+const squareAccessToken = getEnv("SQUARE_ACCESS_TOKEN");
+const configuredLocationId = getEnv("SQUARE_LOCATION_ID");
+
+function resolveSquareEnvironment(explicitEnvironment, appId) {
+    const hasSandboxAppId =
+        typeof appId === "string" &&
+        (appId.startsWith("sandbox-") || appId.includes("sq0idb-"));
+    const hasProductionAppId =
+        typeof appId === "string" && appId.includes("sq0idp-");
+
+    if (hasSandboxAppId) return "sandbox";
+    if (hasProductionAppId) return "production";
+    if (explicitEnvironment === "production") return "production";
+    return "sandbox";
+}
+
+const squareEnvironment = resolveSquareEnvironment(
+    configuredSquareEnvironment,
+    squareApplicationId,
+);
 const isProductionSquare = squareEnvironment === "production";
 const SQUARE_API_BASE = isProductionSquare
     ? "https://connect.squareup.com"
     : "https://connect.squareupsandbox.com";
 const FALLBACK_IMAGE = "/coffee/no_thumb.png";
 
-const squareAccessToken = import.meta.env.SQUARE_ACCESS_TOKEN;
-const squareApplicationId =
-    import.meta.env.SQUARE_APP_ID || import.meta.env.PUBLIC_SQUARE_APP_ID || "";
-const configuredLocationId = import.meta.env.SQUARE_LOCATION_ID;
 const squareJsUrl = isProductionSquare
     ? "https://web.squarecdn.com/v1/square.js"
     : "https://sandbox.web.squarecdn.com/v1/square.js";
