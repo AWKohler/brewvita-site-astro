@@ -662,7 +662,7 @@ try {
                 nav.innerHTML = menu
                     .map(
                         (cat, index) => `
-                <button data-target="cat-${index}" class="category-btn border-2 border-navy rounded-full px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog ${index === 0 ? "bg-navy text-mist shadow-hard-sm active" : "text-navy"}">
+                <button data-target="cat-${index}" class="category-btn border-2 border-navy rounded-full px-4 py-2 font-mono text-sm font-bold uppercase whitespace-nowrap transition-colors hover:bg-fog hover:text-navy ${index === 0 ? "bg-navy text-mist shadow-hard-sm active" : "text-navy"}">
                     ${cat.category}
                 </button>
             `,
