@@ -255,7 +255,7 @@ try {
         <meta charset="UTF-8" />
         <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
         <title>Brewvita | Order Online</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -290,6 +290,34 @@ try {
             };
         </script>
         <style>
+            :root {
+                --safe-top: env(safe-area-inset-top, 0px);
+            }
+
+            .order-shell {
+                min-height: 100vh;
+                min-height: 100dvh;
+                overscroll-behavior-y: none;
+            }
+
+            .safe-top {
+                padding-top: var(--safe-top);
+            }
+
+            .ios-scroll {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
+                touch-action: pan-y;
+            }
+
+            .checkout-drawer-top {
+                top: calc(var(--safe-top) + 2rem);
+            }
+
+            .product-drawer-top {
+                top: calc(var(--safe-top) + 3rem);
+            }
+
             .border-hard {
                 border: 3px solid #152433;
             }
@@ -325,11 +353,11 @@ try {
         </style>
     </head>
     <body
-        class="bg-fog text-navy font-sans antialiased h-screen flex flex-col overflow-hidden"
+        class="order-shell bg-fog text-navy font-sans antialiased flex flex-col overflow-hidden"
     >
         <!-- Conceptual Anchor: Location Context -->
         <div
-            class="bg-navy text-mist px-4 py-2 flex justify-between items-center text-xs font-mono border-b-4 border-slate shrink-0 z-50"
+            class="safe-top bg-navy text-mist px-4 py-2 flex justify-between items-center text-xs font-mono border-b-4 border-slate shrink-0 z-50"
         >
             <div class="flex items-center gap-2">
                 <svg
@@ -371,7 +399,7 @@ try {
 
         <!-- Main Content: Product List -->
         <main
-            class="flex-1 overflow-y-auto pb-32 px-4 pt-6"
+            class="ios-scroll flex-1 overflow-y-auto pb-32 px-4 pt-6"
             id="menu-container"
         >
             <!-- Populated via JS -->
@@ -418,7 +446,7 @@ try {
             ></div>
             <div
                 id="checkout-content"
-                class="absolute inset-x-0 bottom-0 top-8 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
+                class="checkout-drawer-top absolute inset-x-0 bottom-0 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[520px] md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
             >
                 <div class="flex justify-between items-center p-4 border-b-4 border-navy bg-fog shrink-0">
                     <h3 class="font-bold uppercase text-lg">Checkout</h3>
@@ -483,7 +511,7 @@ try {
 
             <!-- Drawer -->
             <div
-                class="absolute inset-x-0 bottom-0 top-12 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:h-auto md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
+                class="product-drawer-top absolute inset-x-0 bottom-0 md:top-auto md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[500px] md:h-auto md:max-h-[90vh] bg-white border-t-4 md:border-4 border-navy flex flex-col transition-transform duration-300 transform translate-y-full md:translate-y-0 md:scale-95 opacity-0 rounded-t-xl md:rounded-none md:shadow-[8px_8px_0px_0px_#152433]"
                 id="modal-content"
             >
                 <!-- Modal Header -->
@@ -773,9 +801,14 @@ try {
             }
 
             function scrollToCategory(id) {
-                document
-                    .getElementById(id)
-                    .scrollIntoView({ behavior: "smooth" });
+                const section = document.getElementById(id);
+                if (!section || !main) return;
+
+                const targetTop = Math.max(section.offsetTop - 12, 0);
+                main.scrollTo({
+                    top: targetTop,
+                    behavior: "smooth",
+                });
             }
 
             // MODAL LOGIC -----------------------------
