@@ -1178,5 +1178,26 @@ try {
             // Run
             init();
         </script>
+        <script
+            is:inline
+            id="sq-messages-plugin"
+            src="https://conversations-production-f.squarecdn.com/v2/messages-plugin.js"
+            data-seller-key="LTGK4HYN3BCF4"
+            data-auto-show="false"
+            async
+        ></script>
+        <script is:inline>
+            window.addEventListener("MessagesPluginReady", () => {
+                if (typeof window.MessagesPlugin !== "function") return;
+
+                const messagesPlugin = new window.MessagesPlugin({
+                    color: "#b9d3ea",
+                    businessName: "Brewvita",
+                    locationName: "Brewvita",
+                    responseTimeText: "We'll respond as soon as we can",
+                });
+                messagesPlugin.show();
+            });
+        </script>
     </body>
 </html>
