@@ -318,6 +318,26 @@ try {
                 top: calc(var(--safe-top) + 3rem);
             }
 
+            messages-plugin::part(popover) {
+                right: 16px !important;
+                bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+                z-index: 48 !important;
+                transition:
+                    bottom 220ms ease,
+                    opacity 180ms ease,
+                    transform 180ms ease;
+            }
+
+            body.messages-shifted messages-plugin::part(popover) {
+                bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            body.messages-hidden messages-plugin::part(popover) {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: translateY(12px);
+            }
+
             .border-hard {
                 border: 3px solid #152433;
             }
@@ -679,6 +699,7 @@ try {
                 renderNav();
                 renderMenu();
                 attachEvents();
+                syncMessagesPluginLayout();
             }
 
             function renderNav() {
@@ -798,6 +819,33 @@ try {
                 checkoutCloseButton?.addEventListener("click", closeCheckoutModal);
                 checkoutBackdrop?.addEventListener("click", closeCheckoutModal);
                 payNowButton?.addEventListener("click", submitPayment);
+                window.addEventListener(
+                    "SqMessagesPluginReady",
+                    syncMessagesPluginLayout,
+                );
+            }
+
+            function syncMessagesPluginLayout() {
+                const isProductModalOpen = !modal.classList.contains("hidden");
+                const isCheckoutOpen = !checkoutModal.classList.contains("hidden");
+                const shouldHideMessages =
+                    isProductModalOpen || isCheckoutOpen;
+                const shouldShiftMessagesUp =
+                    cart.length > 0 && !shouldHideMessages;
+
+                document.body.classList.toggle("messages-hidden", shouldHideMessages);
+                document.body.classList.toggle(
+                    "messages-shifted",
+                    shouldShiftMessagesUp,
+                );
+
+                const messagesPlugin = window.__sqMessagesPlugin;
+                if (!messagesPlugin) return;
+                if (shouldHideMessages) {
+                    messagesPlugin.hide?.();
+                } else {
+                    messagesPlugin.show?.();
+                }
             }
 
             function scrollToCategory(id) {
@@ -877,6 +925,7 @@ try {
 
                 // Show
                 modal.classList.remove("hidden");
+                syncMessagesPluginLayout();
                 setTimeout(() => {
                     backdrop.classList.remove("opacity-0");
                     modalContent.classList.remove(
@@ -896,6 +945,7 @@ try {
                 );
                 setTimeout(() => {
                     modal.classList.add("hidden");
+                    syncMessagesPluginLayout();
                 }, 300);
             };
 
@@ -1034,6 +1084,7 @@ try {
                 );
 
                 checkoutModal.classList.remove("hidden");
+                syncMessagesPluginLayout();
                 setTimeout(() => {
                     checkoutBackdrop.classList.remove("opacity-0");
                     checkoutContent.classList.remove(
@@ -1055,6 +1106,7 @@ try {
                 );
                 setTimeout(() => {
                     checkoutModal.classList.add("hidden");
+                    syncMessagesPluginLayout();
                 }, 300);
             }
 
@@ -1173,6 +1225,8 @@ try {
                         .getElementById("cart-bar")
                         .classList.add("translate-y-full");
                 }
+
+                syncMessagesPluginLayout();
             }
 
             // Run
@@ -1197,6 +1251,8 @@ try {
                     responseTimeText: "We'll respond as soon as we can",
                 });
                 messagesPlugin.show();
+                window.__sqMessagesPlugin = messagesPlugin;
+                window.dispatchEvent(new CustomEvent("SqMessagesPluginReady"));
             });
         </script>
     </body>
