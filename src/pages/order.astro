@@ -318,9 +318,33 @@ try {
                 top: calc(var(--safe-top) + 3rem);
             }
 
-            messages-plugin::part(popover) {
+            :global(messages-plugin) {
+                --messages-offset-bottom: calc(
+                    20px + env(safe-area-inset-bottom, 0px)
+                );
+                --button-border-radius: 999px;
+                --button-medium-size-minimum-height: 52px;
+                --button-medium-size-text-font-family:
+                    "Space Grotesk",
+                    sans-serif;
+                --button-medium-size-text-weight: 700;
+                --button-medium-size-text-size: 18px;
+                --button-medium-size-text-leading: 24px;
+                --button-normal-variant-primary-rank-normal-state-background-color: #ffffff;
+                --button-normal-variant-primary-rank-normal-state-label-color: #152433;
+                --button-normal-variant-primary-rank-hover-state-background-color: #d9e6f5;
+                --button-normal-variant-primary-rank-hover-state-label-color: #152433;
+                --button-normal-variant-primary-rank-pressed-state-background-color: #b8cde6;
+                --button-normal-variant-primary-rank-pressed-state-label-color: #152433;
+                --button-normal-variant-secondary-rank-normal-state-background-color: #ffffff;
+                --button-normal-variant-secondary-rank-normal-state-label-color: #152433;
+                --button-normal-variant-secondary-rank-hover-state-background-color: #d9e6f5;
+                --button-normal-variant-secondary-rank-hover-state-label-color: #152433;
+            }
+
+            :global(messages-plugin::part(popover)) {
                 right: 16px !important;
-                bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+                bottom: var(--messages-offset-bottom) !important;
                 z-index: 48 !important;
                 transition:
                     bottom 220ms ease,
@@ -328,11 +352,13 @@ try {
                     transform 180ms ease;
             }
 
-            body.messages-shifted messages-plugin::part(popover) {
-                bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+            :global(body.messages-shifted messages-plugin) {
+                --messages-offset-bottom: calc(
+                    118px + env(safe-area-inset-bottom, 0px)
+                );
             }
 
-            body.messages-hidden messages-plugin::part(popover) {
+            :global(body.messages-hidden messages-plugin::part(popover)) {
                 opacity: 0 !important;
                 pointer-events: none !important;
                 transform: translateY(12px);
