@@ -330,16 +330,18 @@ try {
                 --button-medium-size-text-weight: 700;
                 --button-medium-size-text-size: 18px;
                 --button-medium-size-text-leading: 24px;
-                --button-normal-variant-primary-rank-normal-state-background-color: #ffffff;
-                --button-normal-variant-primary-rank-normal-state-label-color: #152433;
-                --button-normal-variant-primary-rank-hover-state-background-color: #d9e6f5;
-                --button-normal-variant-primary-rank-hover-state-label-color: #152433;
-                --button-normal-variant-primary-rank-pressed-state-background-color: #b8cde6;
-                --button-normal-variant-primary-rank-pressed-state-label-color: #152433;
-                --button-normal-variant-secondary-rank-normal-state-background-color: #ffffff;
-                --button-normal-variant-secondary-rank-normal-state-label-color: #152433;
-                --button-normal-variant-secondary-rank-hover-state-background-color: #d9e6f5;
-                --button-normal-variant-secondary-rank-hover-state-label-color: #152433;
+                --button-normal-variant-tertiary-rank-normal-state-background-color: #ffffff;
+                --button-normal-variant-tertiary-rank-normal-state-label-color: #152433;
+                --button-normal-variant-tertiary-rank-hover-state-background-color: #d9e6f5;
+                --button-normal-variant-tertiary-rank-hover-state-label-color: #152433;
+                --button-normal-variant-tertiary-rank-pressed-state-background-color: #b8cde6;
+                --button-normal-variant-tertiary-rank-pressed-state-label-color: #152433;
+                --button-normal-variant-tertiary-rank-normal-state-light-mode-background-color: #ffffff;
+                --button-normal-variant-tertiary-rank-normal-state-light-mode-label-color: #152433;
+                --button-normal-variant-tertiary-rank-hover-state-light-mode-background-color: #d9e6f5;
+                --button-normal-variant-tertiary-rank-hover-state-light-mode-label-color: #152433;
+                --button-normal-variant-tertiary-rank-pressed-state-light-mode-background-color: #b8cde6;
+                --button-normal-variant-tertiary-rank-pressed-state-light-mode-label-color: #152433;
             }
 
             :global(messages-plugin::part(popover)) {
@@ -354,7 +356,7 @@ try {
 
             :global(body.messages-shifted messages-plugin) {
                 --messages-offset-bottom: calc(
-                    118px + env(safe-area-inset-bottom, 0px)
+                    104px + env(safe-area-inset-bottom, 0px)
                 );
             }
 
