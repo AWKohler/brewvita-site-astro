@@ -847,6 +847,17 @@ try {
                 checkoutCloseButton?.addEventListener("click", closeCheckoutModal);
                 checkoutBackdrop?.addEventListener("click", closeCheckoutModal);
                 payNowButton?.addEventListener("click", submitPayment);
+                checkoutItems?.addEventListener("click", (event) => {
+                    const target =
+                        event.target instanceof Element
+                            ? event.target.closest("button[data-cart-action]")
+                            : null;
+                    if (!target) return;
+
+                    const encodedKey = target.dataset.cartKey || "";
+                    const action = target.dataset.cartAction || "";
+                    removeFromCartGroup(encodedKey, action === "remove-all");
+                });
                 window.addEventListener(
                     "SqMessagesPluginReady",
                     syncMessagesPluginLayout,
@@ -983,6 +994,13 @@ try {
                     `$${final.toFixed(2)}`;
             }
 
+            function getCartLineKey(line) {
+                const modifierKey = Array.isArray(line.modifier_catalog_object_ids)
+                    ? [...line.modifier_catalog_object_ids].sort().join(",")
+                    : "";
+                return `${line.catalog_object_id || ""}::${modifierKey}`;
+            }
+
             function getCartTotal() {
                 return cart.reduce((acc, line) => acc + Number(line.price || 0), 0);
             }
@@ -999,23 +1017,46 @@ try {
                 if (!payNowButton) return;
 
                 paymentSubmitting = isLoading;
-                payNowButton.disabled = isLoading;
                 const buttonLabel = payNowButton.querySelector("span");
                 if (buttonLabel) {
                     buttonLabel.innerText = isLoading ? "Processing..." : "Pay Now";
                 }
-                payNowButton.classList.toggle("opacity-70", isLoading);
-                payNowButton.classList.toggle("cursor-not-allowed", isLoading);
+                syncPayNowButtonState();
+            }
+
+            function syncPayNowButtonState() {
+                if (!payNowButton) return;
+                const isDisabled = paymentSubmitting || cart.length === 0;
+                payNowButton.disabled = isDisabled;
+                payNowButton.classList.toggle("opacity-70", isDisabled);
+                payNowButton.classList.toggle("cursor-not-allowed", isDisabled);
+            }
+
+            function removeFromCartGroup(encodedKey, removeAll = false) {
+                const groupKey = decodeURIComponent(encodedKey || "");
+                if (!groupKey) return;
+
+                if (removeAll) {
+                    cart = cart.filter((line) => getCartLineKey(line) !== groupKey);
+                } else {
+                    const removeIndex = cart.findIndex(
+                        (line) => getCartLineKey(line) === groupKey,
+                    );
+                    if (removeIndex >= 0) {
+                        cart.splice(removeIndex, 1);
+                    }
+                }
+
+                setCheckoutStatus("");
+                updateCartUI();
+                renderCheckoutSummary();
             }
 
             function renderCheckoutSummary() {
                 const grouped = new Map();
 
                 cart.forEach((line) => {
-                    const modifierKey = Array.isArray(line.modifier_catalog_object_ids)
-                        ? [...line.modifier_catalog_object_ids].sort().join(",")
-                        : "";
-                    const key = `${line.catalog_object_id || ""}::${modifierKey}`;
+                    const key = getCartLineKey(line);
                     const existing = grouped.get(key);
                     if (existing) {
                         existing.quantity += Number(line.quantity || 1);
@@ -1024,6 +1065,7 @@ try {
                     }
 
                     grouped.set(key, {
+                        key,
                         label: line.display_name || line.name || "Item",
                         quantity: Number(line.quantity || 1),
                         total: Number(line.price || 0),
@@ -1039,23 +1081,35 @@ try {
                     `;
                 } else {
                     checkoutItems.innerHTML = rows
-                        .map(
-                            (row) => `
+                        .map((row) => {
+                            const encodedKey = encodeURIComponent(row.key);
+                            return `
                                 <div class="bg-fog border-2 border-navy px-3 py-2 flex justify-between items-center gap-3">
-                                    <div class="min-w-0">
+                                    <div class="min-w-0 flex-1">
                                         <p class="font-bold text-sm truncate">${row.label}</p>
                                         <p class="font-mono text-xs text-slate">Qty ${row.quantity}</p>
                                     </div>
-                                    <p class="font-mono font-bold text-sm">$${row.total.toFixed(2)}</p>
+                                    <div class="flex flex-col items-end gap-2 shrink-0">
+                                        <p class="font-mono font-bold text-sm">$${row.total.toFixed(2)}</p>
+                                        <div class="flex items-center gap-2">
+                                            ${
+                                                row.quantity > 1
+                                                    ? `<button data-cart-action="remove-one" data-cart-key="${encodedKey}" class="border-2 border-navy px-2 py-0.5 rounded-full text-[11px] font-bold uppercase leading-4 hover:bg-fog active:bg-mist transition-colors">-1</button>`
+                                                    : ""
+                                            }
+                                            <button data-cart-action="remove-all" data-cart-key="${encodedKey}" class="border-2 border-navy px-2 py-0.5 rounded-full text-[11px] font-bold uppercase leading-4 hover:bg-fog active:bg-mist transition-colors">Remove</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            `,
-                        )
+                            `;
+                        })
                         .join("");
                 }
 
                 const total = getCartTotal();
                 checkoutTotal.innerText = `$${total.toFixed(2)}`;
                 payNowTotal.innerText = `$${total.toFixed(2)}`;
+                syncPayNowButtonState();
             }
 
             async function ensureCardReady() {
@@ -1238,7 +1292,10 @@ try {
 
             function updateCartUI() {
                 const count = cart.length;
-                const total = cart.reduce((acc, curr) => acc + curr.price, 0);
+                const total = cart.reduce(
+                    (acc, curr) => acc + Number(curr.price || 0),
+                    0,
+                );
 
                 document.getElementById("cart-count").innerText = count;
                 document.getElementById("cart-total").innerText =
@@ -1254,6 +1311,7 @@ try {
                         .classList.add("translate-y-full");
                 }
 
+                syncPayNowButtonState();
                 syncMessagesPluginLayout();
             }
 

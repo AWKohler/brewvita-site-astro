@@ -1,0 +1,63 @@
+<style is:inline>
+    :global(messages-plugin) {
+        --messages-offset-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        --button-border-radius: 999px;
+        --button-medium-size-minimum-height: 52px;
+        --button-medium-size-text-font-family:
+            "Space Grotesk",
+            sans-serif;
+        --button-medium-size-text-weight: 700;
+        --button-medium-size-text-size: 18px;
+        --button-medium-size-text-leading: 24px;
+        --button-normal-variant-tertiary-rank-normal-state-background-color: #ffffff;
+        --button-normal-variant-tertiary-rank-normal-state-label-color: #152433;
+        --button-normal-variant-tertiary-rank-hover-state-background-color: #d9e6f5;
+        --button-normal-variant-tertiary-rank-hover-state-label-color: #152433;
+        --button-normal-variant-tertiary-rank-pressed-state-background-color: #b8cde6;
+        --button-normal-variant-tertiary-rank-pressed-state-label-color: #152433;
+        --button-normal-variant-tertiary-rank-normal-state-light-mode-background-color: #ffffff;
+        --button-normal-variant-tertiary-rank-normal-state-light-mode-label-color: #152433;
+        --button-normal-variant-tertiary-rank-hover-state-light-mode-background-color: #d9e6f5;
+        --button-normal-variant-tertiary-rank-hover-state-light-mode-label-color: #152433;
+        --button-normal-variant-tertiary-rank-pressed-state-light-mode-background-color: #b8cde6;
+        --button-normal-variant-tertiary-rank-pressed-state-light-mode-label-color: #152433;
+    }
+
+    :global(messages-plugin::part(popover)) {
+        right: 16px !important;
+        bottom: var(--messages-offset-bottom) !important;
+        z-index: 48 !important;
+    }
+</style>
+
+<script
+    is:inline
+    id="sq-messages-plugin"
+    src="https://conversations-production-f.squarecdn.com/v2/messages-plugin.js"
+    data-seller-key="LTGK4HYN3BCF4"
+    data-auto-show="false"
+    async
+></script>
+<script is:inline>
+    (() => {
+        function initMessagesPlugin() {
+            if (window.__sqMessagesPlugin) return;
+            if (typeof window.MessagesPlugin !== "function") return;
+
+            const messagesPlugin = new window.MessagesPlugin({
+                color: "#b9d3ea",
+                businessName: "Brewvita",
+                locationName: "Brewvita",
+                responseTimeText: "We'll respond as soon as we can",
+            });
+
+            messagesPlugin.show();
+            window.__sqMessagesPlugin = messagesPlugin;
+        }
+
+        if (typeof window.MessagesPlugin === "function") {
+            initMessagesPlugin();
+        }
+        window.addEventListener("MessagesPluginReady", initMessagesPlugin);
+    })();
+</script>
