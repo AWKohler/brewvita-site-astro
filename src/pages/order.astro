@@ -297,17 +297,14 @@ try {
             .order-shell {
                 min-height: 100vh;
                 min-height: 100dvh;
-                overscroll-behavior-y: none;
             }
 
             .safe-top {
-                padding-top: var(--safe-top);
+                padding-top: calc(var(--safe-top) + 0.5rem);
             }
 
             .ios-scroll {
                 -webkit-overflow-scrolling: touch;
-                overscroll-behavior-y: contain;
-                touch-action: pan-y;
             }
 
             .checkout-drawer-top {
@@ -401,53 +398,55 @@ try {
         </style>
     </head>
     <body
-        class="order-shell bg-fog text-navy font-sans antialiased flex flex-col overflow-hidden"
+        class="order-shell bg-fog text-navy font-sans antialiased overflow-x-hidden"
     >
-        <!-- Conceptual Anchor: Location Context -->
-        <div
-            class="safe-top bg-navy text-mist px-4 py-2 flex justify-between items-center text-xs font-mono border-b-4 border-slate shrink-0 z-50"
-        >
-            <div class="flex items-center gap-2">
-                <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    ></path>
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    ></path>
-                </svg>
-                <span class="uppercase tracking-wide">Pickup: Green Hall</span>
-            </div>
-            <a
-                href="/"
-                class="hover:text-white underline decoration-2 decoration-mist"
-                >Close</a
+        <div id="order-sticky-header" class="sticky top-0 z-50">
+            <!-- Conceptual Anchor: Location Context -->
+            <div
+                class="safe-top bg-navy text-mist px-4 py-2 flex justify-between items-center text-xs font-mono border-b-4 border-slate"
             >
-        </div>
+                <div class="flex items-center gap-2">
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        ></path>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        ></path>
+                    </svg>
+                    <span class="uppercase tracking-wide">Pickup: Green Hall</span>
+                </div>
+                <a
+                    href="/"
+                    class="hover:text-white underline decoration-2 decoration-mist"
+                    >Close</a
+                >
+            </div>
 
-        <!-- Product Discovery: Categories -->
-        <div
-            class="bg-white border-b-4 border-navy py-4 shrink-0 overflow-x-auto hide-scroll z-40 shadow-sm"
-        >
-            <div class="flex gap-4 px-4 min-w-max" id="category-nav">
-                <!-- Populated via JS -->
+            <!-- Product Discovery: Categories -->
+            <div
+                class="bg-white border-b-4 border-navy py-4 overflow-x-auto hide-scroll shadow-sm"
+            >
+                <div class="flex gap-4 px-4 min-w-max" id="category-nav">
+                    <!-- Populated via JS -->
+                </div>
             </div>
         </div>
 
         <!-- Main Content: Product List -->
         <main
-            class="ios-scroll flex-1 overflow-y-auto pb-32 px-4 pt-6"
+            class="ios-scroll pb-32 px-4 pt-6"
             id="menu-container"
         >
             <!-- Populated via JS -->
@@ -700,6 +699,7 @@ try {
             // DOM ELEMENTS ----------------------------
             const nav = document.getElementById("category-nav");
             const main = document.getElementById("menu-container");
+            const stickyHeader = document.getElementById("order-sticky-header");
             const modal = document.getElementById("product-modal");
             const backdrop = document.getElementById("modal-backdrop");
             const modalContent = document.getElementById("modal-content");
@@ -889,10 +889,17 @@ try {
 
             function scrollToCategory(id) {
                 const section = document.getElementById(id);
-                if (!section || !main) return;
+                if (!section) return;
+                const stickyOffset = stickyHeader?.offsetHeight || 0;
 
-                const targetTop = Math.max(section.offsetTop - 12, 0);
-                main.scrollTo({
+                const targetTop = Math.max(
+                    section.getBoundingClientRect().top
+                        + window.scrollY
+                        - stickyOffset
+                        - 12,
+                    0,
+                );
+                window.scrollTo({
                     top: targetTop,
                     behavior: "smooth",
                 });
