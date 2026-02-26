@@ -10,6 +10,7 @@ const squareApplicationId =
     getEnv("SQUARE_APP_ID") || getEnv("PUBLIC_SQUARE_APP_ID") || "";
 const squareAccessToken = getEnv("SQUARE_ACCESS_TOKEN");
 const configuredLocationId = getEnv("SQUARE_LOCATION_ID");
+const configuredOnlineMenuName = getEnv("SQUARE_ONLINE_MENU_NAME") || "Online Menu";
 
 function resolveSquareEnvironment(explicitEnvironment, appId) {
     const hasSandboxAppId =
@@ -52,6 +53,97 @@ function isPresentAtLocation(catalogObject, locationId) {
 
 function amountToDollars(amount) {
     return (Number(amount ?? 0) || 0) / 100;
+}
+
+function toInt(value, fallback = null) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.trunc(parsed);
+}
+
+function toBoolOverride(value) {
+    const normalized = String(value || "NOT_SET").toUpperCase();
+    if (normalized === "YES") return true;
+    if (normalized === "NO") return false;
+    return null;
+}
+
+function resolveAllowQuantities(listData, listInfo) {
+    const override = toBoolOverride(listInfo?.allow_quantities_override);
+    if (override !== null) return override;
+    return Boolean(listData?.allow_quantities);
+}
+
+function resolveOnlineHidden(modifierData, modifierOverride) {
+    const override = toBoolOverride(modifierOverride?.hidden_online_override);
+    if (override !== null) return override;
+    return Boolean(modifierData?.hidden_online);
+}
+
+function resolveOnByDefault(modifierData, modifierOverride) {
+    const override = toBoolOverride(modifierOverride?.on_by_default_override);
+    if (override !== null) return override;
+    if (typeof modifierOverride?.on_by_default === "boolean") {
+        return modifierOverride.on_by_default;
+    }
+    return Boolean(modifierData?.on_by_default);
+}
+
+function resolveMinSelected(rawValue, fallback = 0) {
+    const parsed = toInt(rawValue, null);
+    if (parsed === null || parsed === -1) return fallback;
+    if (parsed < 0) return 0;
+    return parsed;
+}
+
+function resolveMaxSelected(rawValue, fallback = null) {
+    const parsed = toInt(rawValue, null);
+    if (parsed === null || parsed === -1) return fallback;
+    if (parsed <= 0) return null;
+    return parsed;
+}
+
+function resolveModifierPriceAmount(modifierData, modifierOverride, locationId) {
+    const overrideAmount = toInt(modifierOverride?.price_money?.amount, null);
+    if (overrideAmount !== null) return overrideAmount;
+
+    if (locationId && Array.isArray(modifierData?.location_overrides)) {
+        const locationOverride = modifierData.location_overrides.find(
+            (override) => override?.location_id === locationId,
+        );
+        const locationAmount = toInt(locationOverride?.price_money?.amount, null);
+        if (locationAmount !== null) return locationAmount;
+    }
+
+    return toInt(modifierData?.price_money?.amount, 0) ?? 0;
+}
+
+function resolveOrdinal(...values) {
+    for (const value of values) {
+        const parsed = toInt(value, null);
+        if (parsed !== null) return parsed;
+    }
+    return Number.MAX_SAFE_INTEGER;
+}
+
+function hasAssignedChannels(itemData) {
+    return (
+        Array.isArray(itemData?.channels) &&
+        itemData.channels.some(
+            (channelId) =>
+                typeof channelId === "string" && channelId.trim().length > 0,
+        )
+    );
+}
+
+function isVisibleInOnlineMenu(itemData) {
+    const ecomVisibility = String(itemData?.ecom_visibility || "").toUpperCase();
+    if (ecomVisibility === "HIDDEN") return false;
+    if (typeof itemData?.ecom_available === "boolean" && !itemData.ecom_available) {
+        return false;
+    }
+    if (Boolean(itemData?.hidden_online)) return false;
+    return true;
 }
 
 async function squareRequest(path, options = {}) {
@@ -120,18 +212,125 @@ async function fetchCatalogObjects() {
     return { objects, relatedObjects };
 }
 
-function normalizeMenuFromCatalog(catalogObjects, relatedCatalogObjects, locationId) {
-    const allObjects = [...catalogObjects, ...relatedCatalogObjects];
+async function fetchCategoryObjects() {
+    const categories = [];
+    let cursor = null;
+    do {
+        const payload = await squareRequest("/v2/catalog/search", {
+            method: "POST",
+            body: JSON.stringify({
+                object_types: ["CATEGORY"],
+                include_related_objects: false,
+                limit: 100,
+                ...(cursor ? { cursor } : {}),
+            }),
+        });
+
+        if (payload.objects?.length) {
+            categories.push(...payload.objects);
+        }
+        cursor = payload.cursor || null;
+    } while (cursor);
+
+    return categories;
+}
+
+async function fetchMenuItems(locationId) {
+    const menuItems = [];
+    let cursor = null;
+    try {
+        do {
+            const payload = await squareRequest("/v2/catalog/search", {
+                method: "POST",
+                body: JSON.stringify({
+                    object_types: ["MENU_ITEM"],
+                    include_related_objects: false,
+                    limit: 100,
+                    ...(cursor ? { cursor } : {}),
+                }),
+            });
+            const pageMenuItems = Array.isArray(payload?.objects)
+                ? payload.objects
+                : [];
+            pageMenuItems.forEach((menuItemObject) => {
+                if (menuItemObject?.type !== "MENU_ITEM") return;
+                if (menuItemObject?.is_deleted) return;
+                if (!isPresentAtLocation(menuItemObject, locationId)) return;
+                menuItems.push(menuItemObject);
+            });
+            cursor = payload?.cursor || null;
+        } while (cursor);
+    } catch {
+        return [];
+    }
+    return menuItems;
+}
+
+async function fetchLocationChannelIds(locationId) {
+    if (!locationId) return [];
+    if (!isProductionSquare) return [];
+
+    const channelIds = [];
+    let cursor = null;
+    try {
+        do {
+            const query = new URLSearchParams({
+                reference_type: "LOCATION",
+                reference_id: locationId,
+                status: "ACTIVE",
+            });
+            if (cursor) {
+                query.set("cursor", cursor);
+            }
+            const payload = await squareRequest(`/v2/channels?${query.toString()}`);
+            const channels = Array.isArray(payload?.channels) ? payload.channels : [];
+            channels.forEach((channel) => {
+                if (channel?.status !== "ACTIVE") return;
+                if (channel?.reference?.type !== "LOCATION") return;
+                if (channel?.reference?.id !== locationId) return;
+                if (typeof channel?.id !== "string" || !channel.id.length) return;
+                channelIds.push(channel.id);
+            });
+            cursor = payload?.cursor || null;
+        } while (cursor);
+    } catch {
+        return [];
+    }
+
+    return Array.from(new Set(channelIds));
+}
+
+function normalizeMenuFromCatalog(
+    catalogObjects,
+    relatedCatalogObjects,
+    categoryObjects,
+    locationId,
+    locationChannelIds = [],
+    menuItems = [],
+    targetMenuName = "",
+) {
+    const allObjects = [...catalogObjects, ...relatedCatalogObjects, ...categoryObjects];
     const categoriesById = new Map();
     const imagesById = new Map();
     const modifierListsById = new Map();
 
     for (const object of allObjects) {
         if (object.type === "CATEGORY") {
-            categoriesById.set(
-                object.id,
-                object.category_data?.name || "Uncategorized",
-            );
+            categoriesById.set(object.id, {
+                id: object.id,
+                name: object.category_data?.name || "Uncategorized",
+                categoryType: object.category_data?.category_type || "REGULAR_CATEGORY",
+                onlineVisibility: object.category_data?.online_visibility,
+                parentCategoryId: object.category_data?.parent_category?.id || null,
+                rootCategoryId: object.category_data?.root_category || null,
+                isTopLevel: Boolean(object.category_data?.is_top_level),
+                channels: Array.isArray(object.category_data?.channels)
+                    ? object.category_data.channels.filter(
+                          (channelId) =>
+                              typeof channelId === "string" && channelId.length > 0,
+                      )
+                    : [],
+            });
         }
         if (object.type === "IMAGE") {
             imagesById.set(object.id, object.image_data?.url || FALLBACK_IMAGE);
@@ -142,31 +341,187 @@ function normalizeMenuFromCatalog(catalogObjects, relatedCatalogObjects, locatio
     }
 
     const groupedByCategory = new Map();
+    const itemObjects = catalogObjects.filter(
+        (catalogObject) => catalogObject.type === "ITEM",
+    );
+    const hasMenuCategories = Array.from(categoriesById.values()).some(
+        (category) => category.categoryType === "MENU_CATEGORY",
+    );
+    const locationChannelSet = new Set(locationChannelIds);
+    const isMenuCategoryVisibleForLocation = (categoryId) => {
+        const category = categoriesById.get(categoryId);
+        if (!category) return false;
+        if (category.categoryType !== "MENU_CATEGORY") return false;
+        if (category.onlineVisibility !== true) return false;
+        if (!category.channels.length) return false;
+        if (!locationChannelSet.size) return true;
+        return category.channels.some((channelId) => locationChannelSet.has(channelId));
+    };
+    const visibleMenuCategories = Array.from(categoriesById.values())
+        .filter((category) => category.categoryType === "MENU_CATEGORY")
+        .filter((category) => isMenuCategoryVisibleForLocation(category.id));
+    const visibleMenuCategoryIds = new Set(
+        visibleMenuCategories.map((category) => category.id),
+    );
+    const menuRootCandidates = visibleMenuCategories
+        .filter(
+            (category) =>
+                category.isTopLevel ||
+                !category.parentCategoryId ||
+                !visibleMenuCategoryIds.has(category.parentCategoryId),
+        )
+        .map((category) => category.id);
+    const normalizedTargetMenuName = String(targetMenuName || "")
+        .trim()
+        .toLowerCase();
+    const matchingRootIds = normalizedTargetMenuName
+        ? Array.from(categoriesById.values())
+            .filter((category) => menuRootCandidates.includes(category.id))
+            .filter(
+                (category) =>
+                    String(category.name || "").trim().toLowerCase()
+                    === normalizedTargetMenuName,
+            )
+            .map((category) => category.id)
+        : [];
+    const selectedRootIds = new Set(
+        matchingRootIds.length ? matchingRootIds : menuRootCandidates,
+    );
+    const allowedMenuCategoryIds = new Set(
+        visibleMenuCategories
+            .filter((category) => {
+                const rootId =
+                    category.rootCategoryId ||
+                    (category.isTopLevel ? category.id : null);
+                if (!selectedRootIds.size) return true;
+                if (rootId && selectedRootIds.has(rootId)) return true;
+                return selectedRootIds.has(category.id);
+            })
+            .map((category) => category.id),
+    );
+    const menuLinkedItemIds = new Set();
+    const menuItemCategoryIdsByItemId = new Map();
+    menuItems.forEach((menuItemObject) => {
+        const menuItemData = menuItemObject?.menu_item_data || {};
+        const linkedItemId =
+            typeof menuItemData?.item_id === "string" ? menuItemData.item_id : "";
+        if (!linkedItemId) return;
+        const menuCategoryId =
+            typeof menuItemData?.category_id === "string"
+                ? menuItemData.category_id
+                : "";
+        if (allowedMenuCategoryIds.size) {
+            if (!menuCategoryId) return;
+            if (!allowedMenuCategoryIds.has(menuCategoryId)) return;
+        }
+        menuLinkedItemIds.add(linkedItemId);
+        if (menuCategoryId) {
+            if (!menuItemCategoryIdsByItemId.has(linkedItemId)) {
+                menuItemCategoryIdsByItemId.set(linkedItemId, new Set());
+            }
+            menuItemCategoryIdsByItemId.get(linkedItemId).add(menuCategoryId);
+        }
+    });
+    const catalogUsesItemChannels = itemObjects.some((itemObject) =>
+        hasAssignedChannels(itemObject.item_data),
+    );
 
-    for (const itemObject of catalogObjects) {
-        if (itemObject.type !== "ITEM") continue;
+    for (const itemObject of itemObjects) {
+        if (itemObject?.is_deleted) continue;
         if (!isPresentAtLocation(itemObject, locationId)) continue;
+        if (menuLinkedItemIds.size && !menuLinkedItemIds.has(itemObject.id)) continue;
 
         const itemData = itemObject.item_data || {};
-        const variations = (itemData.variations || []).filter(
+        if (itemData?.is_archived) continue;
+        if (!isVisibleInOnlineMenu(itemData)) continue;
+        if (catalogUsesItemChannels && !hasAssignedChannels(itemData)) continue;
+
+        const variations = (itemData.variations || [])
+            .filter(
             (variation) =>
                 variation.type === "ITEM_VARIATION" &&
-                isPresentAtLocation(variation, locationId),
-        );
+                !variation?.is_deleted &&
+                isPresentAtLocation(variation, locationId) &&
+                variation.item_variation_data?.sellable !== false,
+            )
+            .filter((variation) => {
+                const variationData = variation.item_variation_data || {};
+                if (variationData.pricing_type !== "FIXED_PRICING") return false;
+                return Number(variationData.price_money?.amount || 0) > 0;
+            })
+            .sort((a, b) => {
+                const aOrdinal = resolveOrdinal(a.item_variation_data?.ordinal);
+                const bOrdinal = resolveOrdinal(b.item_variation_data?.ordinal);
+                if (aOrdinal !== bOrdinal) return aOrdinal - bOrdinal;
+                const aName = String(a.item_variation_data?.name || "");
+                const bName = String(b.item_variation_data?.name || "");
+                return aName.localeCompare(bName);
+            });
         if (!variations.length) continue;
 
         const primaryVariation =
             variations.find(
                 (variation) =>
-                    variation.item_variation_data?.pricing_type === "FIXED_PRICING",
+                    /regular/i.test(variation.item_variation_data?.name || ""),
             ) || variations[0];
         const variationData = primaryVariation.item_variation_data || {};
 
         const basePrice = amountToDollars(variationData.price_money?.amount);
-        const categoryId =
-            itemData.category_id || itemData.categories?.[0]?.id || null;
-        const categoryName =
-            (categoryId && categoriesById.get(categoryId)) || "Uncategorized";
+        const itemCategoryRefs = [];
+        const menuItemCategoryIds = Array.from(
+            menuItemCategoryIdsByItemId.get(itemObject.id) || [],
+        );
+        menuItemCategoryIds.forEach((categoryId, index) => {
+            itemCategoryRefs.push({
+                id: categoryId,
+                ordinal: -1000 + index,
+            });
+        });
+        if (Array.isArray(itemData.categories)) {
+            itemData.categories.forEach((categoryRef) => {
+                if (typeof categoryRef?.id !== "string" || !categoryRef.id.length) return;
+                itemCategoryRefs.push({
+                    id: categoryRef.id,
+                    ordinal: resolveOrdinal(categoryRef?.ordinal),
+                });
+            });
+        }
+        if (typeof itemData.category_id === "string" && itemData.category_id.length) {
+            itemCategoryRefs.push({
+                id: itemData.category_id,
+                ordinal: Number.MAX_SAFE_INTEGER,
+            });
+        }
+        itemCategoryRefs.sort((a, b) => a.ordinal - b.ordinal);
+
+        const categoryIds = Array.from(
+            new Set(itemCategoryRefs.map((categoryRef) => categoryRef.id)),
+        );
+        let resolvedCategory = null;
+        if (hasMenuCategories && allowedMenuCategoryIds.size) {
+            resolvedCategory =
+                categoryIds
+                    .map((categoryId) => categoriesById.get(categoryId))
+                    .find((category) =>
+                        category && allowedMenuCategoryIds.has(category.id),
+                    ) || null;
+            if (!resolvedCategory) continue;
+        } else if (hasMenuCategories) {
+            resolvedCategory =
+                categoryIds
+                    .map((categoryId) => categoriesById.get(categoryId))
+                    .find((category) =>
+                        category && isMenuCategoryVisibleForLocation(category.id),
+                    ) || null;
+            if (!resolvedCategory) continue;
+        } else {
+            resolvedCategory =
+                categoryIds
+                    .map((categoryId) => categoriesById.get(categoryId))
+                    .find((category) => category && category.onlineVisibility !== false) ||
+                null;
+        }
+        const categoryName = resolvedCategory?.name || "Uncategorized";
 
         const imageId =
             itemData.image_ids?.[0] ||
@@ -176,41 +531,143 @@ function normalizeMenuFromCatalog(catalogObjects, relatedCatalogObjects, locatio
             null;
         const imageUrl = (imageId && imagesById.get(imageId)) || FALLBACK_IMAGE;
 
-        const sizeListInfo = (itemData.modifier_list_info || []).find((listInfo) => {
-            const listData = modifierListsById.get(listInfo.modifier_list_id);
-            const listName = (listData?.name || "").toLowerCase();
-            return listName === "size";
-        });
-
-        const sizeListData = sizeListInfo
-            ? modifierListsById.get(sizeListInfo.modifier_list_id)
-            : null;
-
-        let sizeOptions = (sizeListData?.modifiers || [])
-            .filter((modifier) => isPresentAtLocation(modifier, locationId))
-            .map((modifier) => ({
-                id: modifier.id,
-                name: modifier.modifier_data?.name || "Option",
-                priceAdjustment: amountToDollars(
-                    modifier.modifier_data?.price_money?.amount,
-                ),
-                onByDefault: Boolean(modifier.modifier_data?.on_by_default),
-                sourceType: "MODIFIER",
-            }));
-
-        if (!sizeOptions.length && variations.length > 1) {
-            sizeOptions = variations.map((variation) => {
-                const variationPrice = amountToDollars(
-                    variation.item_variation_data?.price_money?.amount,
+        const modifierGroups = (itemData.modifier_list_info || [])
+            .filter((listInfo) => listInfo?.enabled !== false)
+            .map((listInfo) => {
+                const listData =
+                    modifierListsById.get(listInfo.modifier_list_id) || {};
+                const listHiddenOverride = toBoolOverride(
+                    listInfo?.hidden_online_override,
                 );
+                const isListHiddenOnline =
+                    listHiddenOverride === true ||
+                    (listHiddenOverride === null &&
+                        Boolean(listData?.hidden_online));
+                if (isListHiddenOnline) return null;
+
+                const modifierOverridesById = new Map(
+                    (listInfo.modifier_overrides || [])
+                        .filter((override) => override?.modifier_id)
+                        .map((override) => [override.modifier_id, override]),
+                );
+                const options = (listData.modifiers || [])
+                    .filter((modifier) => isPresentAtLocation(modifier, locationId))
+                    .filter((modifier) => {
+                        const override = modifierOverridesById.get(modifier.id);
+                        return !override?.deleted;
+                    })
+                    .filter((modifier) => {
+                        const override = modifierOverridesById.get(modifier.id);
+                        return !resolveOnlineHidden(modifier.modifier_data, override);
+                    })
+                    .map((modifier) => {
+                        const modifierData = modifier.modifier_data || {};
+                        const override = modifierOverridesById.get(modifier.id) || {};
+                        const priceAmount = resolveModifierPriceAmount(
+                            modifierData,
+                            override,
+                            locationId,
+                        );
+                        return {
+                            id: modifier.id,
+                            name: modifierData.name || "Option",
+                            priceAdjustment: amountToDollars(priceAmount),
+                            onByDefault: resolveOnByDefault(modifierData, override),
+                            sourceType: "MODIFIER",
+                            ordinal: resolveOrdinal(
+                                modifierData.ordinal,
+                                override.ordinal,
+                            ),
+                        };
+                    })
+                    .sort((a, b) => {
+                        if (a.ordinal !== b.ordinal) return a.ordinal - b.ordinal;
+                        return a.name.localeCompare(b.name);
+                    });
+                if (!options.length) return null;
+
+                const allowQuantities = resolveAllowQuantities(listData, listInfo);
+                const selectionType = String(listData.selection_type || "")
+                    .toUpperCase();
+
+                const baseMin = resolveMinSelected(
+                    listData.min_selected_modifiers,
+                    0,
+                );
+                const baseMax = resolveMaxSelected(
+                    listData.max_selected_modifiers,
+                    null,
+                );
+                let minSelected = resolveMinSelected(
+                    listInfo.min_selected_modifiers,
+                    baseMin,
+                );
+                let maxSelected = resolveMaxSelected(
+                    listInfo.max_selected_modifiers,
+                    baseMax,
+                );
+
+                if (!allowQuantities) {
+                    minSelected = Math.min(minSelected, options.length);
+                    if (maxSelected === null) {
+                        maxSelected = options.length;
+                    } else {
+                        maxSelected = Math.min(maxSelected, options.length);
+                    }
+                }
+
+                if (maxSelected !== null && maxSelected < minSelected) {
+                    maxSelected = minSelected;
+                }
+
+                const isSingle =
+                    !allowQuantities &&
+                    (selectionType === "SINGLE" || maxSelected === 1);
+
                 return {
-                    id: variation.id,
-                    variationId: variation.id,
-                    name: variation.item_variation_data?.name || "Option",
-                    priceAdjustment: variationPrice - basePrice,
-                    onByDefault: variation.id === primaryVariation.id,
-                    sourceType: "VARIATION",
+                    id: listInfo.modifier_list_id,
+                    name: listData.name || "Options",
+                    required: minSelected > 0,
+                    minSelected,
+                    maxSelected,
+                    allowQuantities,
+                    isSingle,
+                    ordinal: resolveOrdinal(listInfo.ordinal, listData.ordinal),
+                    options,
                 };
+            })
+            .filter(Boolean)
+            .sort((a, b) => {
+                if (a.ordinal !== b.ordinal) return a.ordinal - b.ordinal;
+                return a.name.localeCompare(b.name);
+            })
+            .map(({ ordinal, ...group }) => group);
+
+        const hasSizeGroup = modifierGroups.some((group) =>
+            /size/i.test(group.name),
+        );
+        if (!hasSizeGroup && variations.length > 1) {
+            modifierGroups.unshift({
+                id: "__variation__",
+                name: "Size",
+                required: true,
+                minSelected: 1,
+                maxSelected: 1,
+                allowQuantities: false,
+                isSingle: true,
+                options: variations.map((variation) => {
+                    const variationPrice = amountToDollars(
+                        variation.item_variation_data?.price_money?.amount,
+                    );
+                    return {
+                        id: variation.id,
+                        variationId: variation.id,
+                        name: variation.item_variation_data?.name || "Option",
+                        priceAdjustment: variationPrice - basePrice,
+                        onByDefault: variation.id === primaryVariation.id,
+                        sourceType: "VARIATION",
+                    };
+                }),
             });
         }
 
@@ -221,7 +678,7 @@ function normalizeMenuFromCatalog(catalogObjects, relatedCatalogObjects, locatio
             desc: itemData.description || "",
             img: imageUrl,
             variationId: primaryVariation.id,
-            sizeOptions,
+            modifierGroups,
         };
 
         if (!groupedByCategory.has(categoryName)) {
@@ -242,8 +699,19 @@ let menuLoadError = "";
 
 try {
     squareLocationId = await resolveLocationId();
+    const locationChannelIds = await fetchLocationChannelIds(squareLocationId);
+    const menuItems = await fetchMenuItems(squareLocationId);
     const { objects, relatedObjects } = await fetchCatalogObjects();
-    menu = normalizeMenuFromCatalog(objects, relatedObjects, squareLocationId);
+    const categoryObjects = await fetchCategoryObjects();
+    menu = normalizeMenuFromCatalog(
+        objects,
+        relatedObjects,
+        categoryObjects,
+        squareLocationId,
+        locationChannelIds,
+        menuItems,
+        configuredOnlineMenuName,
+    );
 } catch (error) {
     menuLoadError =
         error instanceof Error ? error.message : "Unable to load menu.";
@@ -605,16 +1073,7 @@ try {
                     ></p>
 
                     <!-- Configuration -->
-                    <div class="space-y-6" id="modal-config">
-                        <!-- Size -->
-                        <div id="size-section">
-                            <span
-                                class="block font-bold uppercase mb-3 text-xs tracking-widest text-slate"
-                                >Size</span
-                            >
-                            <div class="grid grid-cols-3 gap-3" id="size-options"></div>
-                        </div>
-                    </div>
+                    <div class="space-y-6" id="modal-config"></div>
                 </div>
 
                 <!-- Commitment Action -->
@@ -645,8 +1104,8 @@ try {
             let currentItem = null;
             let cart = [];
             let basePrice = 0;
-            let currentSizeOptions = [];
-            let selectedSizeOption = null;
+            let currentModifierGroups = [];
+            let selectedModifierOptions = [];
             let checkoutCard = null;
             let checkoutCardReady = false;
             let paymentSubmitting = false;
@@ -703,8 +1162,7 @@ try {
             const modal = document.getElementById("product-modal");
             const backdrop = document.getElementById("modal-backdrop");
             const modalContent = document.getElementById("modal-content");
-            const sizeOptionsContainer =
-                document.getElementById("size-options");
+            const modalConfig = document.getElementById("modal-config");
             const reviewOrderButton =
                 document.getElementById("review-order-btn");
             const checkoutModal = document.getElementById("checkout-modal");
@@ -720,7 +1178,6 @@ try {
             const checkoutStatus = document.getElementById("checkout-status");
             const checkoutEmail = document.getElementById("checkout-email");
             const sandboxCardHint = document.getElementById("sandbox-card-hint");
-            const sizeSection = document.getElementById("size-section");
 
             // INIT ------------------------------------
             function init() {
@@ -824,23 +1281,20 @@ try {
                     openModal(itemId);
                 });
 
-                sizeOptionsContainer.addEventListener("click", (event) => {
-                    const button = event.target.closest(".size-btn");
+                modalConfig?.addEventListener("click", (event) => {
+                    const button =
+                        event.target instanceof Element
+                            ? event.target.closest("button[data-modifier-action]")
+                            : null;
                     if (!button) return;
 
+                    const groupIndex = Number(button.dataset.groupIndex);
                     const optionIndex = Number(button.dataset.optionIndex);
-                    selectedSizeOption = currentSizeOptions[optionIndex] || null;
-
-                    document.querySelectorAll(".size-btn").forEach((sizeButton) => {
-                        sizeButton.classList.remove(
-                            "bg-navy",
-                            "text-white",
-                            "shadow-hard-sm",
-                        );
-                    });
-                    button.classList.add("bg-navy", "text-white", "shadow-hard-sm");
-
-                    updatePrice();
+                    if (!Number.isFinite(groupIndex) || !Number.isFinite(optionIndex)) {
+                        return;
+                    }
+                    const action = button.dataset.modifierAction || "toggle";
+                    handleModifierAction(groupIndex, optionIndex, action);
                 });
 
                 reviewOrderButton?.addEventListener("click", openCheckoutModal);
@@ -906,47 +1360,330 @@ try {
             }
 
             // MODAL LOGIC -----------------------------
-            function getDefaultSizeOption(options) {
-                if (!options.length) return null;
-                return (
-                    options.find((option) => option.onByDefault) ||
-                    options.find((option) => /med/i.test(option.name)) ||
-                    options[0]
+            function getDefaultModifierSelection(group) {
+                const selected = new Map();
+                const options = Array.isArray(group?.options) ? group.options : [];
+                if (!options.length) return selected;
+
+                const defaultOptions = options.filter((option) => option.onByDefault);
+                const maxSelectable = Number.isFinite(group.maxSelected)
+                    ? Number(group.maxSelected)
+                    : null;
+
+                for (const option of defaultOptions) {
+                    const selectedCount = Array.from(selected.values()).reduce(
+                        (acc, qty) => acc + Number(qty || 0),
+                        0,
+                    );
+                    if (maxSelectable !== null && selectedCount >= maxSelectable) {
+                        break;
+                    }
+                    selected.set(option.id, 1);
+                    if (group.isSingle) break;
+                }
+
+                if (!selected.size && group.isSingle) {
+                    const preferredOption =
+                        options.find(
+                            (option) =>
+                                /size/i.test(group.name || "") &&
+                                /med/i.test(option.name || ""),
+                        ) ||
+                        (group.required && /size/i.test(group.name || "")
+                            ? options[0]
+                            : null);
+                    if (preferredOption?.id) {
+                        selected.set(preferredOption.id, 1);
+                    }
+                }
+
+                return selected;
+            }
+
+            function getSelectedCount(selectionMap) {
+                return Array.from((selectionMap || new Map()).values()).reduce(
+                    (acc, qty) => acc + Number(qty || 0),
+                    0,
                 );
             }
 
-            function renderSizeOptions(item) {
-                currentSizeOptions = item.sizeOptions?.length > 0 ? item.sizeOptions : [];
+            function getGroupSelectionCount(groupIndex) {
+                return getSelectedCount(selectedModifierOptions[groupIndex]);
+            }
 
-                if (!currentSizeOptions.length) {
-                    selectedSizeOption = null;
-                    sizeSection?.classList.add("hidden");
-                    sizeOptionsContainer.innerHTML = "";
+            function getOptionQuantity(groupIndex, optionId) {
+                const selectionMap = selectedModifierOptions[groupIndex] || new Map();
+                return Number(selectionMap.get(optionId) || 0);
+            }
+
+            function getGroupHelperText(group, selectedCount) {
+                const hasMax = Number.isFinite(group.maxSelected);
+                const maxSelected = hasMax ? Number(group.maxSelected) : null;
+
+                if (!hasMax) {
+                    return group.required
+                        ? `Required / Min ${group.minSelected}`
+                        : "Optional";
+                }
+                if (group.minSelected === maxSelected) {
+                    return `Pick ${maxSelected}`;
+                }
+                if (group.required) {
+                    return `Required / Pick ${group.minSelected}-${maxSelected}`;
+                }
+                if (maxSelected === 1) {
+                    return selectedCount > 0 ? "Selected" : "Optional";
+                }
+                return `Optional / Pick up to ${maxSelected}`;
+            }
+
+            function getModifierAdjustmentLabel(adjustment) {
+                const numericAdjustment = Number(adjustment || 0);
+                if (numericAdjustment === 0) return "";
+                return `${numericAdjustment > 0 ? "+" : "-"}$${Math.abs(numericAdjustment).toFixed(2)}`;
+            }
+
+            function renderQuantityOption(
+                groupIndex,
+                option,
+                optionIndex,
+                quantity,
+            ) {
+                const adjustmentLabel = getModifierAdjustmentLabel(
+                    option.priceAdjustment,
+                );
+                const isSelected = quantity > 0;
+                return `
+                    <div class="border-2 border-navy rounded-2xl p-3 ${isSelected ? "bg-mist" : "bg-white"}">
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="block text-sm font-bold leading-tight">${option.name}</span>
+                            ${adjustmentLabel ? `<span class="block text-[10px] font-mono shrink-0">${adjustmentLabel}</span>` : ""}
+                        </div>
+                        <div class="mt-3 flex items-center justify-between gap-2">
+                            <button
+                                class="w-8 h-8 border-2 border-navy rounded-full font-bold text-lg leading-none ${quantity > 0 ? "bg-white" : "bg-fog text-slate"}"
+                                data-group-index="${groupIndex}"
+                                data-option-index="${optionIndex}"
+                                data-modifier-action="dec"
+                                ${quantity > 0 ? "" : "disabled"}
+                            >
+                                -
+                            </button>
+                            <span class="font-mono text-sm font-bold min-w-8 text-center">${quantity}</span>
+                            <button
+                                class="w-8 h-8 border-2 border-navy rounded-full font-bold text-lg leading-none bg-white"
+                                data-group-index="${groupIndex}"
+                                data-option-index="${optionIndex}"
+                                data-modifier-action="inc"
+                            >
+                                +
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderToggleOption(groupIndex, option, optionIndex, isSelected) {
+                const adjustmentLabel = getModifierAdjustmentLabel(
+                    option.priceAdjustment,
+                );
+                return `
+                    <button
+                        class="border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors ${isSelected ? "bg-navy text-white shadow-hard-sm" : ""}"
+                        data-group-index="${groupIndex}"
+                        data-option-index="${optionIndex}"
+                        data-modifier-action="toggle"
+                    >
+                        <span class="block text-sm font-bold truncate">${option.name}</span>
+                        ${adjustmentLabel ? `<span class="block text-[10px] mt-0.5">${adjustmentLabel}</span>` : ""}
+                    </button>
+                `;
+            }
+
+            function renderModifierGroups(item) {
+                currentModifierGroups = Array.isArray(item?.modifierGroups)
+                    ? item.modifierGroups
+                    : [];
+                selectedModifierOptions = currentModifierGroups.map((group) =>
+                    getDefaultModifierSelection(group),
+                );
+                renderModifierGroupsUI();
+            }
+
+            function renderModifierGroupsUI() {
+                if (!modalConfig) return;
+                if (!currentModifierGroups.length) {
+                    modalConfig.innerHTML = "";
                     return;
                 }
 
-                sizeSection?.classList.remove("hidden");
-
-                selectedSizeOption = getDefaultSizeOption(currentSizeOptions);
-
-                sizeOptionsContainer.innerHTML = currentSizeOptions
-                    .map((option, index) => {
-                        const isSelected =
-                            selectedSizeOption &&
-                            selectedSizeOption.name === option.name &&
-                            selectedSizeOption.priceAdjustment ===
-                                option.priceAdjustment;
+                modalConfig.innerHTML = currentModifierGroups
+                    .map((group, groupIndex) => {
+                        const selectedCount = getGroupSelectionCount(groupIndex);
+                        const helperText = getGroupHelperText(group, selectedCount);
+                        const allowQuantities = Boolean(group.allowQuantities);
+                        const optionGridClass =
+                            group.options.length <= 3
+                                ? "grid-cols-3"
+                                : "grid-cols-2";
 
                         return `
-                            <button
-                                class="size-btn border-2 border-navy rounded-full p-3 font-mono text-center hover:bg-fog focus:bg-navy focus:text-white transition-colors ${isSelected ? "bg-navy text-white shadow-hard-sm" : ""}"
-                                data-option-index="${index}"
-                            >
-                                <span class="block text-lg font-bold">${option.name}</span>
-                            </button>
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <span class="block font-bold uppercase text-xs tracking-widest text-slate">${group.name}</span>
+                                    <span class="font-mono text-[10px] uppercase text-slate">${helperText}</span>
+                                </div>
+                                <div class="grid ${optionGridClass} gap-3">
+                                    ${group.options
+                                        .map((option, optionIndex) => {
+                                            const quantity = getOptionQuantity(
+                                                groupIndex,
+                                                option.id,
+                                            );
+                                            const isSelected = quantity > 0;
+                                            if (allowQuantities) {
+                                                return renderQuantityOption(
+                                                    groupIndex,
+                                                    option,
+                                                    optionIndex,
+                                                    quantity,
+                                                );
+                                            }
+                                            return renderToggleOption(
+                                                groupIndex,
+                                                option,
+                                                optionIndex,
+                                                isSelected,
+                                            );
+                                        })
+                                        .join("")}
+                                </div>
+                            </div>
                         `;
                     })
                     .join("");
+            }
+
+            function toggleModifierOption(groupIndex, optionIndex) {
+                const group = currentModifierGroups[groupIndex];
+                if (!group) return;
+                const option = group.options?.[optionIndex];
+                if (!option) return;
+
+                const currentSelection = new Map(
+                    selectedModifierOptions[groupIndex] || new Map(),
+                );
+                const currentQuantity = Number(currentSelection.get(option.id) || 0);
+                const selectedCount = getSelectedCount(currentSelection);
+                const hasMax = Number.isFinite(group.maxSelected);
+                const maxSelected = hasMax ? Number(group.maxSelected) : null;
+
+                if (group.allowQuantities) {
+                    return;
+                }
+
+                if (group.isSingle) {
+                    if (currentQuantity > 0 && !group.required) {
+                        currentSelection.clear();
+                    } else if (currentQuantity <= 0) {
+                        currentSelection.clear();
+                        currentSelection.set(option.id, 1);
+                    }
+                } else if (currentQuantity > 0) {
+                    if (selectedCount <= group.minSelected) return;
+                    currentSelection.delete(option.id);
+                } else {
+                    if (maxSelected !== null && selectedCount >= maxSelected) return;
+                    currentSelection.set(option.id, 1);
+                }
+
+                selectedModifierOptions[groupIndex] = currentSelection;
+                renderModifierGroupsUI();
+                updatePrice();
+            }
+
+            function adjustModifierQuantity(groupIndex, optionIndex, delta) {
+                const group = currentModifierGroups[groupIndex];
+                if (!group) return;
+                const option = group.options?.[optionIndex];
+                if (!option) return;
+                if (!group.allowQuantities) return;
+
+                const currentSelection = new Map(
+                    selectedModifierOptions[groupIndex] || new Map(),
+                );
+                const currentQuantity = Number(currentSelection.get(option.id) || 0);
+                const selectedCount = getSelectedCount(currentSelection);
+                const hasMax = Number.isFinite(group.maxSelected);
+                const maxSelected = hasMax ? Number(group.maxSelected) : null;
+
+                if (delta > 0) {
+                    if (maxSelected !== null && selectedCount >= maxSelected) return;
+                    currentSelection.set(option.id, currentQuantity + 1);
+                } else {
+                    if (currentQuantity <= 0) return;
+                    const nextQty = currentQuantity - 1;
+                    if (nextQty <= 0) {
+                        currentSelection.delete(option.id);
+                    } else {
+                        currentSelection.set(option.id, nextQty);
+                    }
+                }
+
+                selectedModifierOptions[groupIndex] = currentSelection;
+                renderModifierGroupsUI();
+                updatePrice();
+            }
+
+            function handleModifierAction(groupIndex, optionIndex, action) {
+                if (action === "inc") {
+                    adjustModifierQuantity(groupIndex, optionIndex, 1);
+                    return;
+                }
+                if (action === "dec") {
+                    adjustModifierQuantity(groupIndex, optionIndex, -1);
+                    return;
+                }
+                toggleModifierOption(groupIndex, optionIndex);
+            }
+
+            function getSelectedOptionDetails() {
+                const selectedOptions = [];
+                currentModifierGroups.forEach((group, groupIndex) => {
+                    const selectedSet =
+                        selectedModifierOptions[groupIndex] || new Map();
+                    group.options.forEach((option) => {
+                        const quantity = Number(selectedSet.get(option.id) || 0);
+                        if (quantity <= 0) return;
+                        selectedOptions.push({
+                            ...option,
+                            quantity,
+                            groupId: group.id,
+                            groupName: group.name,
+                        });
+                    });
+                });
+                return selectedOptions;
+            }
+
+            function getModifierSelectionError() {
+                for (let index = 0; index < currentModifierGroups.length; index += 1) {
+                    const group = currentModifierGroups[index];
+                    const selectedCount = getGroupSelectionCount(index);
+                    if (selectedCount < group.minSelected) {
+                        if (group.minSelected === 1) {
+                            return `Please select a ${group.name} option.`;
+                        }
+                        return `Please select at least ${group.minSelected} ${group.name} options.`;
+                    }
+                    if (
+                        Number.isFinite(group.maxSelected) &&
+                        selectedCount > Number(group.maxSelected)
+                    ) {
+                        return `Please select no more than ${group.maxSelected} ${group.name} options.`;
+                    }
+                }
+                return "";
             }
 
             window.openModal = function (itemId) {
@@ -965,7 +1702,7 @@ try {
                     this.src = "/coffee/no_thumb.png";
                 };
 
-                renderSizeOptions(found);
+                renderModifierGroups(found);
 
                 updatePrice();
 
@@ -996,15 +1733,69 @@ try {
             };
 
             function updatePrice() {
-                const final = basePrice + (selectedSizeOption?.priceAdjustment || 0);
+                const final =
+                    basePrice +
+                    getSelectedOptionDetails().reduce(
+                        (acc, option) =>
+                            acc +
+                            Number(option.priceAdjustment || 0)
+                                * Number(option.quantity || 1),
+                        0,
+                    );
                 document.getElementById("modal-price").innerText =
                     `$${final.toFixed(2)}`;
             }
 
+            function getCartLineModifiers(line) {
+                if (Array.isArray(line.modifiers)) {
+                    const normalized = line.modifiers
+                        .map((modifier) => {
+                            const id =
+                                typeof modifier?.catalog_object_id === "string"
+                                    ? modifier.catalog_object_id
+                                    : "";
+                            const quantity = Math.max(
+                                1,
+                                Math.trunc(Number(modifier?.quantity || 1) || 1),
+                            );
+                            if (!id) return null;
+                            return {
+                                catalog_object_id: id,
+                                quantity,
+                            };
+                        })
+                        .filter(Boolean);
+                    if (normalized.length) {
+                        return normalized.sort((a, b) =>
+                            a.catalog_object_id.localeCompare(b.catalog_object_id),
+                        );
+                    }
+                }
+
+                const fallbackIds = Array.isArray(line.modifier_catalog_object_ids)
+                    ? line.modifier_catalog_object_ids
+                    : [];
+                return Array.from(
+                    new Set(
+                        fallbackIds.filter(
+                            (id) => typeof id === "string" && id.length > 0,
+                        ),
+                    ),
+                )
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((id) => ({
+                        catalog_object_id: id,
+                        quantity: 1,
+                    }));
+            }
+
             function getCartLineKey(line) {
-                const modifierKey = Array.isArray(line.modifier_catalog_object_ids)
-                    ? [...line.modifier_catalog_object_ids].sort().join(",")
-                    : "";
+                const modifierKey = getCartLineModifiers(line)
+                    .map(
+                        (modifier) =>
+                            `${modifier.catalog_object_id}x${modifier.quantity}`,
+                    )
+                    .join(",");
                 return `${line.catalog_object_id || ""}::${modifierKey}`;
             }
 
@@ -1269,27 +2060,61 @@ try {
             window.addToOrder = function () {
                 if (!currentItem) return;
 
+                const selectionError = getModifierSelectionError();
+                if (selectionError) {
+                    window.alert(selectionError);
+                    return;
+                }
+
+                const selectedOptions = getSelectedOptionDetails();
                 const finalPrice =
-                    basePrice + (selectedSizeOption?.priceAdjustment || 0);
-                const modifierIds = selectedSizeOption?.id
-                    && selectedSizeOption.sourceType === "MODIFIER"
-                    ? [selectedSizeOption.id]
-                    : [];
+                    basePrice +
+                    selectedOptions.reduce(
+                        (acc, option) =>
+                            acc +
+                            Number(option.priceAdjustment || 0)
+                                * Number(option.quantity || 1),
+                        0,
+                    );
+                const modifiers = selectedOptions
+                    .filter((option) => option.sourceType === "MODIFIER")
+                    .map((option) => ({
+                        catalog_object_id: option.id,
+                        quantity: String(
+                            Math.max(
+                                1,
+                                Math.trunc(Number(option.quantity || 1) || 1),
+                            ),
+                        ),
+                    }));
+                const selectedVariation =
+                    selectedOptions.find(
+                        (option) => option.sourceType === "VARIATION",
+                    ) || null;
                 const selectedVariationId =
-                    selectedSizeOption?.sourceType === "VARIATION"
-                        ? selectedSizeOption.variationId
-                        : currentItem.variationId;
-                const selectedOptionName = selectedSizeOption?.name || "";
-                const displayName =
-                    selectedOptionName
-                        ? `${currentItem.name} (${selectedOptionName})`
-                        : currentItem.name;
+                    selectedVariation?.variationId ||
+                    selectedVariation?.id ||
+                    currentItem.variationId;
+                const selectedOptionNames = selectedOptions
+                    .map((option) => {
+                        const quantity = Number(option.quantity || 1);
+                        return quantity > 1
+                            ? `${option.name} x${quantity}`
+                            : option.name;
+                    })
+                    .filter(Boolean);
+                const displayName = selectedOptionNames.length
+                    ? `${currentItem.name} (${selectedOptionNames.join(", ")})`
+                    : currentItem.name;
 
                 cart.push({
                     name: currentItem.name,
                     display_name: displayName,
                     catalog_object_id: selectedVariationId,
-                    modifier_catalog_object_ids: modifierIds,
+                    modifiers,
+                    modifier_catalog_object_ids: modifiers.map(
+                        (modifier) => modifier.catalog_object_id,
+                    ),
                     quantity: 1,
                     price: finalPrice,
                 });

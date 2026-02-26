@@ -12,6 +12,7 @@ type RuntimeLocals = {
 
 type IncomingCartLine = {
     catalog_object_id?: unknown;
+    modifiers?: unknown;
     modifier_catalog_object_ids?: unknown;
     quantity?: unknown;
 };
@@ -24,7 +25,10 @@ type CheckoutRequestBody = {
 
 type NormalizedLine = {
     catalogObjectId: string;
-    modifierIds: string[];
+    modifierEntries: Array<{
+        catalogObjectId: string;
+        quantity: number;
+    }>;
     quantity: number;
 };
 
@@ -43,6 +47,45 @@ function normalizeQuantity(rawQuantity: unknown) {
     return Math.floor(parsed);
 }
 
+function normalizeModifiers(rawLine: IncomingCartLine) {
+    const grouped = new Map<string, number>();
+
+    if (Array.isArray(rawLine.modifiers)) {
+        for (const modifier of rawLine.modifiers) {
+            const modifierRecord =
+                modifier && typeof modifier === "object"
+                    ? (modifier as Record<string, unknown>)
+                    : null;
+            const catalogObjectId =
+                typeof modifierRecord?.catalog_object_id === "string"
+                    ? modifierRecord.catalog_object_id.trim()
+                    : "";
+            if (!catalogObjectId) continue;
+            const quantity = normalizeQuantity(modifierRecord?.quantity);
+            grouped.set(
+                catalogObjectId,
+                (grouped.get(catalogObjectId) || 0) + quantity,
+            );
+        }
+    }
+
+    if (!grouped.size && Array.isArray(rawLine.modifier_catalog_object_ids)) {
+        for (const modifierId of rawLine.modifier_catalog_object_ids) {
+            const catalogObjectId =
+                typeof modifierId === "string" ? modifierId.trim() : "";
+            if (!catalogObjectId) continue;
+            grouped.set(catalogObjectId, (grouped.get(catalogObjectId) || 0) + 1);
+        }
+    }
+
+    return Array.from(grouped.entries())
+        .map(([catalogObjectId, quantity]) => ({
+            catalogObjectId,
+            quantity,
+        }))
+        .sort((a, b) => a.catalogObjectId.localeCompare(b.catalogObjectId));
+}
+
 function normalizeCartLines(rawCart: IncomingCartLine[]) {
     const grouped = new Map<string, NormalizedLine>();
 
@@ -53,22 +96,12 @@ function normalizeCartLines(rawCart: IncomingCartLine[]) {
                 : "";
         if (!catalogObjectId) continue;
 
-        const modifierIds = Array.isArray(line.modifier_catalog_object_ids)
-            ? Array.from(
-                  new Set(
-                      line.modifier_catalog_object_ids
-                          .filter(
-                              (modifierId): modifierId is string =>
-                                  typeof modifierId === "string" &&
-                                  modifierId.trim().length > 0,
-                          )
-                          .map((modifierId) => modifierId.trim()),
-                  ),
-              ).sort()
-            : [];
+        const modifierEntries = normalizeModifiers(line);
 
         const quantity = normalizeQuantity(line.quantity);
-        const key = `${catalogObjectId}::${modifierIds.join(",")}`;
+        const key = `${catalogObjectId}::${modifierEntries
+            .map((modifier) => `${modifier.catalogObjectId}x${modifier.quantity}`)
+            .join(",")}`;
         const existing = grouped.get(key);
         if (existing) {
             existing.quantity += quantity;
@@ -77,7 +110,7 @@ function normalizeCartLines(rawCart: IncomingCartLine[]) {
 
         grouped.set(key, {
             catalogObjectId,
-            modifierIds,
+            modifierEntries,
             quantity,
         });
     }
@@ -200,11 +233,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const lineItems = normalizedLines.map((line) => ({
             catalog_object_id: line.catalogObjectId,
             quantity: String(line.quantity),
-            ...(line.modifierIds.length
+            ...(line.modifierEntries.length
                 ? {
-                      modifiers: line.modifierIds.map((modifierId) => ({
-                          catalog_object_id: modifierId,
-                          quantity: "1",
+                      modifiers: line.modifierEntries.map((modifier) => ({
+                          catalog_object_id: modifier.catalogObjectId,
+                          quantity: String(modifier.quantity),
                       })),
                   }
                 : {}),
