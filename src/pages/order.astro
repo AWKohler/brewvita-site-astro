@@ -693,9 +693,25 @@ function normalizeMenuFromCatalog(
     }));
 }
 
+async function fetchLocationHours(locationId) {
+    if (!locationId) return { periods: [], timezone: "America/New_York" };
+    try {
+        const payload = await squareRequest(`/v2/locations/${locationId}`);
+        const location = payload?.location || {};
+        return {
+            periods: location.business_hours?.periods || [],
+            timezone: location.timezone || "America/New_York",
+        };
+    } catch {
+        return { periods: [], timezone: "America/New_York" };
+    }
+}
+
 let squareLocationId = configuredLocationId || null;
 let menu = [];
 let menuLoadError = "";
+let businessHourPeriods = [];
+let locationTimezone = "America/New_York";
 
 try {
     squareLocationId = await resolveLocationId();
@@ -703,6 +719,9 @@ try {
     const menuItems = await fetchMenuItems(squareLocationId);
     const { objects, relatedObjects } = await fetchCatalogObjects();
     const categoryObjects = await fetchCategoryObjects();
+    const hoursData = await fetchLocationHours(squareLocationId);
+    businessHourPeriods = hoursData.periods;
+    locationTimezone = hoursData.timezone;
     menu = normalizeMenuFromCatalog(
         objects,
         relatedObjects,
@@ -902,6 +921,14 @@ try {
                 >
             </div>
 
+            <!-- Hours Banner: shown when closed -->
+            <div
+                id="closed-banner"
+                class="hidden bg-ink text-fog px-4 py-2 text-xs font-mono border-b-2 border-slate text-center"
+            >
+                <span id="closed-banner-text">We're currently closed.</span>
+            </div>
+
             <!-- Product Discovery: Categories -->
             <div
                 class="bg-white border-b-4 border-navy py-4 overflow-x-auto hide-scroll shadow-sm"
@@ -1079,6 +1106,7 @@ try {
                 <!-- Commitment Action -->
                 <div class="p-4 border-t-4 border-navy bg-white shrink-0">
                     <button
+                        id="add-to-order-btn"
                         onclick="addToOrder()"
                         class="w-full bg-mist text-navy border-hard rounded-full py-4 font-bold uppercase text-lg shadow-hard-sm hover:shadow-hard hover:-translate-y-1 transition-all flex justify-between px-8"
                     >
@@ -1097,6 +1125,8 @@ try {
                 squareApplicationId,
                 squareLocationId,
                 squareEnvironment,
+                businessHourPeriods,
+                locationTimezone,
             }}
             is:inline
         >
@@ -1155,6 +1185,95 @@ try {
                 ),
             );
 
+            // HOURS ------------------------------------
+            function isStoreOpen() {
+                if (!businessHourPeriods.length) return true;
+                const now = new Date();
+                const parts = new Intl.DateTimeFormat("en-US", {
+                    timeZone: locationTimezone,
+                    weekday: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).formatToParts(now);
+                const get = (type) =>
+                    parts.find((p) => p.type === type)?.value || "";
+                const dayMap = {
+                    Sun: "SUN", Mon: "MON", Tue: "TUE", Wed: "WED",
+                    Thu: "THU", Fri: "FRI", Sat: "SAT",
+                };
+                const weekday = dayMap[get("weekday")] || "";
+                const h = get("hour").replace(/^24$/, "00").padStart(2, "0");
+                const m = get("minute").padStart(2, "0");
+                const s = get("second").padStart(2, "0");
+                const currentTime = `${h}:${m}:${s}`;
+                return businessHourPeriods.some((period) => {
+                    if (period.day_of_week !== weekday) return false;
+                    return (
+                        currentTime >= period.start_local_time &&
+                        currentTime < period.end_local_time
+                    );
+                });
+            }
+
+            function formatHoursText() {
+                if (!businessHourPeriods.length) return "";
+                const dayOrder = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+                const dayShort = {
+                    MON: "Mon", TUE: "Tue", WED: "Wed", THU: "Thu",
+                    FRI: "Fri", SAT: "Sat", SUN: "Sun",
+                };
+                const fmt12 = (t) => {
+                    const [h, min] = t.split(":").map(Number);
+                    const period = h >= 12 ? "PM" : "AM";
+                    const hour = h % 12 || 12;
+                    return min
+                        ? `${hour}:${String(min).padStart(2, "0")} ${period}`
+                        : `${hour} ${period}`;
+                };
+                const byTime = new Map();
+                businessHourPeriods.forEach((p) => {
+                    const key = `${p.start_local_time}|${p.end_local_time}`;
+                    if (!byTime.has(key)) byTime.set(key, []);
+                    byTime.get(key).push(p.day_of_week);
+                });
+                const segments = [];
+                for (const [key, days] of byTime) {
+                    days.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                    const [start, end] = key.split("|");
+                    const first = dayShort[days[0]];
+                    const last = dayShort[days[days.length - 1]];
+                    const dayStr =
+                        days.length > 2
+                            ? `${first}–${last}`
+                            : days.map((d) => dayShort[d]).join(", ");
+                    segments.push(`${dayStr} ${fmt12(start)}–${fmt12(end)}`);
+                }
+                return segments.join(" · ");
+            }
+
+            function syncHoursUI() {
+                const open = isStoreOpen();
+                const banner = document.getElementById("closed-banner");
+                const bannerText = document.getElementById("closed-banner-text");
+                const addBtn = document.getElementById("add-to-order-btn");
+                if (banner) {
+                    banner.classList.toggle("hidden", open);
+                    if (!open && bannerText) {
+                        const hoursText = formatHoursText();
+                        bannerText.textContent = hoursText
+                            ? `We're currently closed. Hours: ${hoursText}`
+                            : "We're currently closed.";
+                    }
+                }
+                if (addBtn) {
+                    addBtn.disabled = !open;
+                    addBtn.classList.toggle("opacity-50", !open);
+                    addBtn.classList.toggle("cursor-not-allowed", !open);
+                }
+            }
+
             // DOM ELEMENTS ----------------------------
             const nav = document.getElementById("category-nav");
             const main = document.getElementById("menu-container");
@@ -1184,6 +1303,8 @@ try {
                 renderNav();
                 renderMenu();
                 attachEvents();
+                syncHoursUI();
+                setInterval(syncHoursUI, 60_000);
                 syncMessagesPluginLayout();
             }
 
@@ -1951,6 +2072,15 @@ try {
             }
 
             async function openCheckoutModal() {
+                if (!isStoreOpen()) {
+                    window.alert(
+                        "We're currently closed.\n\n" +
+                            (formatHoursText()
+                                ? `Hours: ${formatHoursText()}`
+                                : "Check back during business hours."),
+                    );
+                    return;
+                }
                 if (!cart.length) {
                     window.alert("Add at least one item before checking out.");
                     return;
@@ -2058,6 +2188,15 @@ try {
             }
 
             window.addToOrder = function () {
+                if (!isStoreOpen()) {
+                    window.alert(
+                        "We're currently closed.\n\n" +
+                            (formatHoursText()
+                                ? `Hours: ${formatHoursText()}`
+                                : "Check back during business hours."),
+                    );
+                    return;
+                }
                 if (!currentItem) return;
 
                 const selectionError = getModifierSelectionError();
