@@ -21,6 +21,8 @@ type CheckoutRequestBody = {
     cart?: unknown;
     sourceId?: unknown;
     buyerEmailAddress?: unknown;
+    scheduleType?: unknown;
+    pickupAt?: unknown;
 };
 
 type NormalizedLine = {
@@ -222,6 +224,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 ? body.buyerEmailAddress.trim()
                 : null;
 
+        const scheduleType =
+            typeof body?.scheduleType === "string" &&
+            body.scheduleType === "SCHEDULED"
+                ? "SCHEDULED"
+                : "ASAP";
+        const pickupAt =
+            scheduleType === "SCHEDULED" &&
+            typeof body?.pickupAt === "string" &&
+            body.pickupAt.trim()
+                ? body.pickupAt.trim()
+                : null;
+
+        if (scheduleType === "SCHEDULED" && !pickupAt) {
+            return jsonResponse(
+                { error: "Scheduled orders require a pickup time." },
+                400,
+            );
+        }
+
         const locationId = await resolveLocationId(locals);
         if (!locationId) {
             return jsonResponse(
@@ -243,6 +264,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 : {}),
         }));
 
+        const fulfillment: Record<string, unknown> = {
+            type: "PICKUP",
+            state: "PROPOSED",
+            pickup_details: {
+                schedule_type: scheduleType,
+                ...(pickupAt ? { pickup_at: pickupAt } : {}),
+                ...(buyerEmailAddress
+                    ? {
+                          recipient: {
+                              email_address: buyerEmailAddress,
+                          },
+                      }
+                    : {}),
+            },
+        };
+
         const createOrderResponse = await squareRequest(
             "/v2/orders",
             locals,
@@ -253,6 +290,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                     order: {
                         location_id: locationId,
                         line_items: lineItems,
+                        fulfillments: [fulfillment],
                     },
                 }),
             },

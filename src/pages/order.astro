@@ -1014,6 +1014,41 @@ try {
 
                     <div class="space-y-3">
                         <h4 class="font-bold uppercase text-xs tracking-widest text-slate">
+                            Pickup Time
+                        </h4>
+                        <div class="flex gap-2">
+                            <button
+                                id="schedule-asap-btn"
+                                type="button"
+                                class="flex-1 border-hard rounded-full px-4 py-2 font-bold uppercase text-sm transition-all bg-navy text-mist shadow-hard-sm"
+                            >
+                                ASAP
+                            </button>
+                            <button
+                                id="schedule-later-btn"
+                                type="button"
+                                class="flex-1 border-hard rounded-full px-4 py-2 font-bold uppercase text-sm transition-all text-navy hover:bg-fog"
+                            >
+                                Schedule
+                            </button>
+                        </div>
+                        <div id="schedule-picker" class="hidden space-y-2">
+                            <input
+                                id="schedule-date"
+                                type="date"
+                                class="w-full border-2 border-navy px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-mist bg-fog"
+                            />
+                            <input
+                                id="schedule-time"
+                                type="time"
+                                class="w-full border-2 border-navy px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-mist bg-fog"
+                            />
+                            <p id="schedule-hint" class="font-mono text-xs text-slate"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="font-bold uppercase text-xs tracking-widest text-slate">
                             Payment Card
                         </h4>
                         <input
@@ -1257,20 +1292,180 @@ try {
                 const open = isStoreOpen();
                 const banner = document.getElementById("closed-banner");
                 const bannerText = document.getElementById("closed-banner-text");
-                const addBtn = document.getElementById("add-to-order-btn");
                 if (banner) {
                     banner.classList.toggle("hidden", open);
                     if (!open && bannerText) {
                         const hoursText = formatHoursText();
                         bannerText.textContent = hoursText
-                            ? `We're currently closed. Hours: ${hoursText}`
-                            : "We're currently closed.";
+                            ? `We're currently closed — you can schedule an order for later. Hours: ${hoursText}`
+                            : "We're currently closed — you can schedule an order for later.";
                     }
                 }
-                if (addBtn) {
-                    addBtn.disabled = !open;
-                    addBtn.classList.toggle("opacity-50", !open);
-                    addBtn.classList.toggle("cursor-not-allowed", !open);
+            }
+
+            // SCHEDULING ------------------------------
+            function isTimeWithinBusinessHours(dateObj) {
+                const parts = new Intl.DateTimeFormat("en-US", {
+                    timeZone: locationTimezone,
+                    weekday: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                }).formatToParts(dateObj);
+                const get = (type) =>
+                    parts.find((p) => p.type === type)?.value || "";
+                const dayMap = {
+                    Sun: "SUN", Mon: "MON", Tue: "TUE", Wed: "WED",
+                    Thu: "THU", Fri: "FRI", Sat: "SAT",
+                };
+                const weekday = dayMap[get("weekday")] || "";
+                const h = get("hour").replace(/^24$/, "00").padStart(2, "0");
+                const m = get("minute").padStart(2, "0");
+                const s = get("second").padStart(2, "0");
+                const timeStr = `${h}:${m}:${s}`;
+                return businessHourPeriods.some((period) => {
+                    if (period.day_of_week !== weekday) return false;
+                    return timeStr >= period.start_local_time && timeStr < period.end_local_time;
+                });
+            }
+
+            function getScheduledPickupAt() {
+                if (scheduleMode !== "SCHEDULED") return null;
+                const dateVal = scheduleDateInput?.value;
+                const timeVal = scheduleTimeInput?.value;
+                if (!dateVal || !timeVal) return null;
+                // Build an ISO string in the store's local time, then convert to UTC
+                // We parse as a local time in the store timezone
+                const localStr = `${dateVal}T${timeVal}:00`;
+                const targetDate = new Date(
+                    new Date(localStr).toLocaleString("en-US", { timeZone: locationTimezone })
+                );
+                // More reliable: construct using Intl to find the UTC offset
+                // Simply use the user-selected date/time as the store-local time
+                // and build the RFC3339 string Square expects
+                const naive = new Date(`${dateVal}T${timeVal}:00`);
+                // Get the offset between the store timezone and UTC at that moment
+                const utcStr = naive.toLocaleString("en-US", { timeZone: "UTC" });
+                const tzStr = naive.toLocaleString("en-US", { timeZone: locationTimezone });
+                const utcDate = new Date(utcStr);
+                const tzDate = new Date(tzStr);
+                const offsetMs = utcDate.getTime() - tzDate.getTime();
+                const pickupUtc = new Date(naive.getTime() + offsetMs);
+                return pickupUtc.toISOString().replace(/\.\d{3}Z$/, ".000Z");
+            }
+
+            function getScheduledDateForValidation() {
+                if (scheduleMode !== "SCHEDULED") return null;
+                const dateVal = scheduleDateInput?.value;
+                const timeVal = scheduleTimeInput?.value;
+                if (!dateVal || !timeVal) return null;
+                const naive = new Date(`${dateVal}T${timeVal}:00`);
+                const utcStr = naive.toLocaleString("en-US", { timeZone: "UTC" });
+                const tzStr = naive.toLocaleString("en-US", { timeZone: locationTimezone });
+                const utcDate = new Date(utcStr);
+                const tzDate = new Date(tzStr);
+                const offsetMs = utcDate.getTime() - tzDate.getTime();
+                return new Date(naive.getTime() + offsetMs);
+            }
+
+            function validateSchedule() {
+                if (scheduleMode !== "SCHEDULED") return null; // no error
+                const dateVal = scheduleDateInput?.value;
+                const timeVal = scheduleTimeInput?.value;
+                if (!dateVal || !timeVal) return "Please select a date and time.";
+                const pickupDate = getScheduledDateForValidation();
+                if (!pickupDate) return "Please select a date and time.";
+                const now = new Date();
+                // Must be at least 15 minutes in the future
+                if (pickupDate.getTime() - now.getTime() < 15 * 60 * 1000) {
+                    return "Pickup time must be at least 15 minutes from now.";
+                }
+                // Must be within business hours
+                if (businessHourPeriods.length && !isTimeWithinBusinessHours(pickupDate)) {
+                    const hoursText = formatHoursText();
+                    return hoursText
+                        ? `That time is outside business hours. Hours: ${hoursText}`
+                        : "That time is outside business hours.";
+                }
+                return null;
+            }
+
+            function setScheduleMode(mode) {
+                scheduleMode = mode;
+                const isScheduled = mode === "SCHEDULED";
+                schedulePicker?.classList.toggle("hidden", !isScheduled);
+                // Toggle button styles
+                if (scheduleAsapBtn) {
+                    scheduleAsapBtn.classList.toggle("bg-navy", !isScheduled);
+                    scheduleAsapBtn.classList.toggle("text-mist", !isScheduled);
+                    scheduleAsapBtn.classList.toggle("shadow-hard-sm", !isScheduled);
+                    scheduleAsapBtn.classList.toggle("text-navy", isScheduled);
+                    scheduleAsapBtn.classList.toggle("hover:bg-fog", isScheduled);
+                }
+                if (scheduleLaterBtn) {
+                    scheduleLaterBtn.classList.toggle("bg-navy", isScheduled);
+                    scheduleLaterBtn.classList.toggle("text-mist", isScheduled);
+                    scheduleLaterBtn.classList.toggle("shadow-hard-sm", isScheduled);
+                    scheduleLaterBtn.classList.toggle("text-navy", !isScheduled);
+                    scheduleLaterBtn.classList.toggle("hover:bg-fog", !isScheduled);
+                }
+                updateScheduleHint();
+            }
+
+            function updateScheduleHint() {
+                if (!scheduleHint) return;
+                if (scheduleMode !== "SCHEDULED") {
+                    scheduleHint.textContent = "";
+                    return;
+                }
+                const error = validateSchedule();
+                if (error) {
+                    scheduleHint.textContent = error;
+                    scheduleHint.classList.add("text-red-700");
+                    scheduleHint.classList.remove("text-slate");
+                } else {
+                    scheduleHint.textContent = "";
+                    scheduleHint.classList.remove("text-red-700");
+                    scheduleHint.classList.add("text-slate");
+                }
+            }
+
+            function initScheduleDefaults() {
+                // Set default date to today, default time to next half hour
+                const now = new Date();
+                const tzParts = new Intl.DateTimeFormat("en-CA", {
+                    timeZone: locationTimezone,
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                }).formatToParts(now);
+                const getP = (type) => tzParts.find((p) => p.type === type)?.value || "";
+                const todayStr = `${getP("year")}-${getP("month")}-${getP("day")}`;
+
+                const timeParts = new Intl.DateTimeFormat("en-US", {
+                    timeZone: locationTimezone,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                }).formatToParts(now);
+                const getT = (type) => timeParts.find((p) => p.type === type)?.value || "";
+                let h = parseInt(getT("hour"), 10) || 0;
+                let m = parseInt(getT("minute"), 10) || 0;
+                // Round up to next 30-min slot + 30 min buffer
+                m = m < 30 ? 30 : 0;
+                if (m === 0) h += 1;
+                h += 1; // add ~30-60 min buffer
+                if (h >= 24) h = h - 24;
+                const defaultTime = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+
+                if (scheduleDateInput) {
+                    scheduleDateInput.value = todayStr;
+                    // Set min to today
+                    scheduleDateInput.min = todayStr;
+                }
+                if (scheduleTimeInput) {
+                    scheduleTimeInput.value = defaultTime;
                 }
             }
 
@@ -1297,6 +1492,13 @@ try {
             const checkoutStatus = document.getElementById("checkout-status");
             const checkoutEmail = document.getElementById("checkout-email");
             const sandboxCardHint = document.getElementById("sandbox-card-hint");
+            const scheduleAsapBtn = document.getElementById("schedule-asap-btn");
+            const scheduleLaterBtn = document.getElementById("schedule-later-btn");
+            const schedulePicker = document.getElementById("schedule-picker");
+            const scheduleDateInput = document.getElementById("schedule-date");
+            const scheduleTimeInput = document.getElementById("schedule-time");
+            const scheduleHint = document.getElementById("schedule-hint");
+            let scheduleMode = "ASAP"; // "ASAP" or "SCHEDULED"
 
             // INIT ------------------------------------
             function init() {
@@ -1422,6 +1624,10 @@ try {
                 checkoutCloseButton?.addEventListener("click", closeCheckoutModal);
                 checkoutBackdrop?.addEventListener("click", closeCheckoutModal);
                 payNowButton?.addEventListener("click", submitPayment);
+                scheduleAsapBtn?.addEventListener("click", () => setScheduleMode("ASAP"));
+                scheduleLaterBtn?.addEventListener("click", () => setScheduleMode("SCHEDULED"));
+                scheduleDateInput?.addEventListener("change", updateScheduleHint);
+                scheduleTimeInput?.addEventListener("change", updateScheduleHint);
                 checkoutItems?.addEventListener("click", (event) => {
                     const target =
                         event.target instanceof Element
@@ -2072,19 +2278,18 @@ try {
             }
 
             async function openCheckoutModal() {
-                if (!isStoreOpen()) {
-                    window.alert(
-                        "We're currently closed.\n\n" +
-                            (formatHoursText()
-                                ? `Hours: ${formatHoursText()}`
-                                : "Check back during business hours."),
-                    );
-                    return;
-                }
                 if (!cart.length) {
                     window.alert("Add at least one item before checking out.");
                     return;
                 }
+
+                // If store is closed, default to schedule mode
+                if (!isStoreOpen()) {
+                    setScheduleMode("SCHEDULED");
+                } else {
+                    setScheduleMode("ASAP");
+                }
+                initScheduleDefaults();
 
                 renderCheckoutSummary();
                 setCheckoutStatus("");
@@ -2127,6 +2332,21 @@ try {
                     return;
                 }
 
+                // Validate schedule if in scheduled mode
+                if (scheduleMode === "SCHEDULED") {
+                    const scheduleError = validateSchedule();
+                    if (scheduleError) {
+                        setCheckoutStatus(scheduleError, true);
+                        return;
+                    }
+                } else if (!isStoreOpen()) {
+                    setCheckoutStatus(
+                        "The store is currently closed. Please schedule your order for a later time.",
+                        true,
+                    );
+                    return;
+                }
+
                 const cardReady = await ensureCardReady();
                 if (!cardReady || !checkoutCard) return;
 
@@ -2142,6 +2362,7 @@ try {
                         );
                     }
 
+                    const pickupAt = getScheduledPickupAt();
                     const response = await fetch("/api/checkout", {
                         method: "POST",
                         headers: {
@@ -2151,6 +2372,8 @@ try {
                             cart,
                             sourceId: tokenResult.token,
                             buyerEmailAddress: checkoutEmail?.value?.trim() || undefined,
+                            scheduleType: scheduleMode,
+                            pickupAt: pickupAt || undefined,
                         }),
                     });
                     const payload = await response.json().catch(() => ({}));
@@ -2188,15 +2411,6 @@ try {
             }
 
             window.addToOrder = function () {
-                if (!isStoreOpen()) {
-                    window.alert(
-                        "We're currently closed.\n\n" +
-                            (formatHoursText()
-                                ? `Hours: ${formatHoursText()}`
-                                : "Check back during business hours."),
-                    );
-                    return;
-                }
                 if (!currentItem) return;
 
                 const selectionError = getModifierSelectionError();
