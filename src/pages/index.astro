@@ -9,8 +9,17 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         <title>Brewvita Coffee Co. | Home</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <style is:global>
+            @font-face {
+                font-family: "Block Berthold Condensed";
+                src: url("/Block_Berthold_Condensed.woff2") format("woff2");
+                font-weight: 400 700;
+                font-style: normal;
+                font-display: swap;
+            }
+        </style>
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
             rel="stylesheet"
         />
         <script is:inline>
@@ -26,7 +35,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             steel: "#2d4056",
                         },
                         fontFamily: {
-                            sans: ['"Space Grotesk"', "sans-serif"],
+                            sans: ['"Block Berthold Condensed"', "sans-serif"],
                             mono: ['"Space Mono"', "monospace"],
                         },
                         boxShadow: {
@@ -46,7 +55,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                 },
             };
         </script>
-        <style>
+        <style is:global>
             .border-hard {
                 border: 3px solid #152433;
             }
@@ -154,65 +163,43 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         </div>
 
         <!-- Testimonials -->
-        <section
-            class="grid grid-cols-1 md:grid-cols-3 border-b-4 border-navy bg-white"
-        >
-            <!-- 1 -->
-            <div
-                class="p-10 border-b-4 md:border-b-0 md:border-r-4 border-navy hover:bg-mist transition-colors group"
-            >
-                <div
-                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
-                >
-                    "
+        <section class="bg-white border-b-4 border-navy py-16 px-6">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+                <!-- Polaroid 1 -->
+                <div class="bg-white border-hard p-5 pb-10 shadow-hard transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                    <div class="bg-fog border-2 border-navy/10 p-6 mb-6">
+                        <p class="font-mono text-sm leading-relaxed font-medium italic">
+                            "Brewvita is my go-to between classes. Fast service, great
+                            espresso, and the baristas always remember my order."
+                        </p>
+                    </div>
+                    <p class="text-center font-bold text-sm uppercase tracking-widest">
+                        Kian Graham
+                    </p>
                 </div>
-                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
-                    Brewvita is my go-to between classes. Fast service, great
-                    espresso, and the baristas always remember my order.
-                </p>
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 bg-navy"></div>
-                    <strong class="text-xs uppercase tracking-widest"
-                        >Kian Graham</strong
-                    >
+                <!-- Polaroid 2 -->
+                <div class="bg-white border-hard p-5 pb-10 shadow-hard transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                    <div class="bg-fog border-2 border-navy/10 p-6 mb-6">
+                        <p class="font-mono text-sm leading-relaxed font-medium italic">
+                            "The seasonal drinks are actually creative, not just sweet.
+                            The honey oat latte is a must."
+                        </p>
+                    </div>
+                    <p class="text-center font-bold text-sm uppercase tracking-widest">
+                        Celine Guajardo
+                    </p>
                 </div>
-            </div>
-            <!-- 2 -->
-            <div
-                class="p-10 border-b-4 md:border-b-0 md:border-r-4 border-navy hover:bg-mist transition-colors group"
-            >
-                <div
-                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
-                >
-                    "
-                </div>
-                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
-                    The seasonal drinks are actually creative, not just sweet.
-                    The honey oat latte is a must.
-                </p>
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 bg-slate"></div>
-                    <strong class="text-xs uppercase tracking-widest"
-                        >Celine Guajardo</strong
-                    >
-                </div>
-            </div>
-            <!-- 3 -->
-            <div class="p-10 hover:bg-mist transition-colors group">
-                <div
-                    class="text-6xl font-bold text-slate/20 group-hover:text-slate/40 mb-4 font-mono"
-                >
-                    "
-                </div>
-                <p class="font-mono text-sm leading-relaxed mb-6 font-medium">
-                    I love that every cup supports student leadership. Great
-                    coffee with a purpose makes it even better.
-                </p>
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 bg-steel"></div>
-                    <strong class="text-xs uppercase tracking-widest"
-                        >Harlow Martin</strong
-                    >
+                <!-- Polaroid 3 -->
+                <div class="bg-white border-hard p-5 pb-10 shadow-hard transform -rotate-1 hover:rotate-0 transition-transform duration-300">
+                    <div class="bg-fog border-2 border-navy/10 p-6 mb-6">
+                        <p class="font-mono text-sm leading-relaxed font-medium italic">
+                            "I love that every cup supports students. Great
+                            coffee with a purpose makes it even better."
+                        </p>
+                    </div>
+                    <p class="text-center font-bold text-sm uppercase tracking-widest">
+                        Harlow Martin
+                    </p>
                 </div>
             </div>
         </section>
@@ -241,8 +228,8 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                         </p>
                         <div class="h-px w-full bg-slate"></div>
                         <p class="opacity-80">
-                            Buy our coffee beans at the Grid on Liberty’s
-                            campus.
+                            Buy our coffee beans at the Montview Market on
+                            Liberty’s campus.
                         </p>
                     </div>
                 </div>

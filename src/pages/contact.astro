@@ -9,8 +9,17 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         <title>Brewvita Coffee Co. | Contact</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <style is:global>
+            @font-face {
+                font-family: "Block Berthold Condensed";
+                src: url("/Block_Berthold_Condensed.woff2") format("woff2");
+                font-weight: 400 700;
+                font-style: normal;
+                font-display: swap;
+            }
+        </style>
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
             rel="stylesheet"
         />
         <script is:inline>
@@ -26,7 +35,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             steel: "#2d4056",
                         },
                         fontFamily: {
-                            sans: ['"Space Grotesk"', "sans-serif"],
+                            sans: ['"Block Berthold Condensed"', "sans-serif"],
                             mono: ['"Space Mono"', "monospace"],
                         },
                         boxShadow: {
@@ -36,7 +45,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                 },
             };
         </script>
-        <style>
+        <style is:global>
             .border-hard {
                 border: 3px solid #152433;
             }
@@ -116,13 +125,13 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             Email
                         </p>
                         <p class="font-mono text-lg uppercase font-bold">
-                            Maples, Anna Grace
+                            Brewvita Coffee Co.
                         </p>
                         <a
-                            href="mailto:agmaples1@liberty.edu"
+                            href="mailto:students@brewvita.com"
                             class="mt-2 inline-block font-mono text-lg underline underline-offset-4 hover:text-navy"
                         >
-                            agmaples1@liberty.edu
+                            students@brewvita.com
                         </a>
                     </div>
                 </div>
@@ -149,7 +158,10 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             >
                         </summary>
                         <div class="pt-4 pb-2 font-mono text-sm text-slate">
-                            We accept most major cards and mobile pay.
+                            Brewvita accepts card, mobile pay, and Flames Cash.
+                            Since we are not a unit through Sodexo, we cannot
+                            accept dining dollars or swipes. We hope to see you
+                            soon!
                         </div>
                     </details>
                     <!-- FAQ 2 -->

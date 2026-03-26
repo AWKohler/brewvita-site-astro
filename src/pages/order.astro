@@ -687,10 +687,19 @@ function normalizeMenuFromCatalog(
         groupedByCategory.get(categoryName).push(item);
     }
 
-    return Array.from(groupedByCategory.entries()).map(([category, items]) => ({
+    const result = Array.from(groupedByCategory.entries()).map(([category, items]) => ({
         category,
         items,
     }));
+
+    // Sort so "Featured" category always comes first
+    result.sort((a, b) => {
+        const aFeatured = /featured/i.test(a.category) ? 0 : 1;
+        const bFeatured = /featured/i.test(b.category) ? 0 : 1;
+        return aFeatured - bFeatured;
+    });
+
+    return result;
 }
 
 async function fetchLocationHours(locationId) {
@@ -748,8 +757,17 @@ try {
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script src="https://cdn.tailwindcss.com" is:inline></script>
         <script src={squareJsUrl}></script>
+        <style is:global>
+            @font-face {
+                font-family: "Block Berthold Condensed";
+                src: url("/Block_Berthold_Condensed.woff2") format("woff2");
+                font-weight: 400 700;
+                font-style: normal;
+                font-display: swap;
+            }
+        </style>
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
             rel="stylesheet"
         />
         <script is:inline>
@@ -765,7 +783,7 @@ try {
                             "img-bg": "#96c2e8",
                         },
                         fontFamily: {
-                            sans: ['"Space Grotesk"', "sans-serif"],
+                            sans: ['"Block Berthold Condensed"', "sans-serif"],
                             mono: ['"Space Mono"', "monospace"],
                         },
                         boxShadow: {
@@ -776,7 +794,7 @@ try {
                 },
             };
         </script>
-        <style>
+        <style is:global>
             :root {
                 --safe-top: env(safe-area-inset-top, 0px);
             }
@@ -809,7 +827,7 @@ try {
                 --button-border-radius: 999px;
                 --button-medium-size-minimum-height: 52px;
                 --button-medium-size-text-font-family:
-                    "Space Grotesk",
+                    "Block Berthold Condensed",
                     sans-serif;
                 --button-medium-size-text-weight: 700;
                 --button-medium-size-text-size: 18px;

@@ -9,8 +9,17 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         <title>Brewvita Coffee Co. | Application</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script src="https://cdn.tailwindcss.com" is:inline></script>
+        <style is:global>
+            @font-face {
+                font-family: "Block Berthold Condensed";
+                src: url("/Block_Berthold_Condensed.woff2") format("woff2");
+                font-weight: 400 700;
+                font-style: normal;
+                font-display: swap;
+            }
+        </style>
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
             rel="stylesheet"
         />
         <script is:inline>
@@ -27,7 +36,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             alert: "#d93025",
                         },
                         fontFamily: {
-                            sans: ['"Space Grotesk"', "sans-serif"],
+                            sans: ['"Block Berthold Condensed"', "sans-serif"],
                             mono: ['"Space Mono"', "monospace"],
                         },
                         boxShadow: {
@@ -38,7 +47,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                 },
             };
         </script>
-        <style>
+        <style is:global>
             .border-hard {
                 border: 3px solid #152433;
             }
@@ -119,163 +128,50 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                         Join The Team
                     </div>
 
-                    <div id="form-wrapper">
-                        <!-- Header -->
-                        <div
-                            class="bg-mist p-8 md:p-10 border-b-4 border-navy relative overflow-hidden"
-                        >
-                            <div class="absolute top-0 right-0 p-4 opacity-10">
-                                <svg
-                                    class="w-24 h-24 text-navy"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                                    />
-                                </svg>
-                            </div>
-                            <h1
-                                class="text-3xl md:text-5xl font-bold uppercase text-navy mb-2 relative z-10"
-                            >
-                                Brewvita Involvement
-                            </h1>
-                            <p
-                                class="font-mono text-slate font-bold tracking-wide relative z-10 text-sm md:text-base mb-4"
-                            >
-                                Apply to be involved with Brewvita
-                            </p>
-                            <div
-                                class="text-alert font-mono text-xs uppercase font-bold relative z-10"
-                            >
-                                * Indicates required question
-                            </div>
-                        </div>
-
-                        <!-- The Form -->
-                        <form
-                            action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSd4wYbDjYJwTYwd1VgI4wf1StgVyNJnaXcxM314eqC-OZkIjg/formResponse"
-                            method="POST"
-                            id="brewvita-involvement-form"
-                            target="hidden_iframe"
-                            onsubmit="submitted=true;"
-                            class="p-8 md:p-10 space-y-8"
-                        >
-                            <!-- Question 1 -->
-                            <div class="space-y-3">
-                                <label
-                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
-                                >
-                                    What is your name (First and last)<span
-                                        class="text-alert ml-1"
-                                        >*</span
-                                    >
-                                </label>
-                                <input
-                                    type="text"
-                                    name="entry.699967240"
-                                    placeholder="Your answer"
-                                    required
-                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
-                                />
-                            </div>
-
-                            <!-- Question 2 -->
-                            <div class="space-y-3">
-                                <label
-                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
-                                >
-                                    Why would you like to work with
-                                    Brewvita?<span class="text-alert ml-1"
-                                        >*</span
-                                    >
-                                </label>
-                                <input
-                                    type="text"
-                                    name="entry.704344506"
-                                    placeholder="Your answer"
-                                    required
-                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
-                                />
-                            </div>
-
-                            <!-- Question 3 -->
-                            <div class="space-y-3">
-                                <label
-                                    class="block font-mono font-bold uppercase text-sm text-slate border-l-4 border-mist pl-3"
-                                >
-                                    What position would you like to hold?<span
-                                        class="text-alert ml-1"
-                                        >*</span
-                                    >
-                                </label>
-                                <input
-                                    type="text"
-                                    name="entry.2077881677"
-                                    placeholder="Your answer"
-                                    required
-                                    class="w-full bg-fog input-hard p-4 font-mono text-navy placeholder-slate/50 outline-none transition-all duration-200 focus-effect"
-                                />
-                            </div>
-
-                            <!-- Submit Area -->
-                            <div
-                                class="pt-6 border-t-2 border-navy/10 flex justify-end"
-                            >
-                                <button
-                                    type="submit"
-                                    class="bg-navy text-white font-bold font-mono uppercase px-8 py-4 border-hard rounded-full shadow-hard hover:bg-slate hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200"
-                                >
-                                    Submit
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Success Message -->
-                    <div
-                        id="success-message"
-                        class="hidden p-12 text-center bg-mist min-h-[400px] flex flex-col items-center justify-center"
-                    >
-                        <div
-                            class="w-20 h-20 bg-white border-hard rounded-full flex items-center justify-center mb-6 shadow-hard"
-                        >
+                    <!-- Not Hiring Notice -->
+                    <div class="bg-mist p-8 md:p-10 border-b-4 border-navy relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
                             <svg
-                                class="w-10 h-10 text-navy"
-                                fill="none"
-                                stroke="currentColor"
+                                class="w-24 h-24 text-navy"
+                                fill="currentColor"
                                 viewBox="0 0 24 24"
                             >
                                 <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="3"
-                                    d="M5 13l4 4L19 7"
-                                ></path>
+                                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                                />
                             </svg>
                         </div>
-                        <h2
-                            class="text-3xl md:text-4xl font-bold uppercase text-navy mb-4"
+                        <h1
+                            class="text-3xl md:text-5xl font-bold uppercase text-navy mb-2 relative z-10"
                         >
-                            Application<br />Submitted
-                        </h2>
-                        <p class="font-mono text-slate mb-8 max-w-sm mx-auto">
-                            Thank you for your interest in Brewvita. We will
-                            review your application shortly.
+                            Brewvita Involvement
+                        </h1>
+                        <p
+                            class="font-mono text-slate font-bold tracking-wide relative z-10 text-sm md:text-base"
+                        >
+                            Apply to be involved with Brewvita
                         </p>
-
-                        <button
-                            onclick="location.reload()"
-                            class="inline-block border-hard rounded-full bg-white text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                    </div>
+                    <div class="p-10 md:p-14 text-center flex flex-col items-center justify-center min-h-[300px]">
+                        <div
+                            class="w-16 h-16 bg-fog border-hard rounded-full flex items-center justify-center mb-6"
                         >
-                            Submit another response
-                        </button>
-
+                            <svg class="w-8 h-8 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold uppercase text-navy mb-4">
+                            Not Currently Hiring
+                        </h2>
+                        <p class="font-mono text-sm text-slate max-w-md mx-auto mb-6">
+                            Thank you for your interest in Brewvita! We are not currently accepting applications, but check back soon for future openings.
+                        </p>
                         <a
                             href="/"
-                            class="mt-6 block font-mono text-xs underline uppercase tracking-widest hover:text-white"
-                            >Return to Home</a
+                            class="inline-block border-hard rounded-full bg-mist text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                         >
+                            Return to Home
+                        </a>
                     </div>
                 </div>
             </div>
@@ -287,27 +183,6 @@ import MessagesWidget from "../components/MessagesWidget.astro";
             &copy; 2026 Brewvita Coffee Co.
         </footer>
 
-        <!-- Hidden iframe logic -->
-        <iframe
-            name="hidden_iframe"
-            id="hidden_iframe"
-            style="display: none"
-            onload="if(submitted) { showSuccess(); }"
-        ></iframe>
-
-        <script is:inline>
-            var submitted = false;
-            function showSuccess() {
-                // Hide the form wrapper
-                document.getElementById("form-wrapper").style.display = "none";
-                // Show the success message
-                document
-                    .getElementById("success-message")
-                    .classList.remove("hidden");
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-        </script>
         <MessagesWidget />
     </body>
 </html>
