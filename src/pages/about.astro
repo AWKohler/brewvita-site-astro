@@ -8,7 +8,6 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Brewvita Coffee Co. | About</title>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-
         <script src="https://cdn.tailwindcss.com" is:inline></script>
         <style is:global>
             @font-face {
@@ -47,12 +46,31 @@ import MessagesWidget from "../components/MessagesWidget.astro";
             };
         </script>
         <style is:global>
-            .border-hard {
-                border: 3px solid #152433;
+            .border-hard { border: 3px solid #152433; }
+
+            .polaroid-wrap { perspective: 1800px; }
+            .polaroid-card {
+                position: relative;
+                transform-style: preserve-3d;
+                transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+                cursor: pointer;
             }
+            .polaroid-card:hover,
+            .polaroid-card:focus-visible { transform: rotateY(180deg); }
+            .polaroid-face {
+                position: absolute;
+                inset: 0;
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+            }
+            .polaroid-back { transform: rotateY(180deg); }
+
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         </style>
     </head>
     <body class="bg-fog text-navy font-sans antialiased">
+
         <!-- Navbar -->
         <nav class="sticky top-0 z-50 bg-white border-b-4 border-navy">
             <div class="flex flex-col md:flex-row items-center relative">
@@ -67,196 +85,335 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                     </a>
                 </div>
                 <div class="flex flex-wrap md:w-full md:justify-center">
-                    <a
-                        href="/"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Home</a
-                    >
-                    <a
-                        href="/menu"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Menu</a
-                    >
-                    <a
-                        href="/about"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >About</a
-                    >
-                    <a
-                        href="/contact"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Contact</a
-                    >
+                    <a href="/" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Home</a>
+                    <a href="/menu" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Menu</a>
+                    <a href="/about" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">About</a>
+                    <a href="/contact" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Contact</a>
                 </div>
             </div>
         </nav>
 
-        <!-- Intro -->
-        <section class="py-24 px-6 border-b-4 border-navy bg-white">
-            <div class="max-w-5xl mx-auto">
+        <!-- About Hero -->
+        <section
+            class="relative h-screen bg-navy overflow-hidden border-b-4 border-navy flex flex-col justify-center"
+        >
+            <img
+                src="/screen_2x.webp"
+                alt="Brewvita coffee"
+                class="absolute inset-0 w-full h-full object-cover object-right"
+            />
+            <div class="relative z-10 px-10 md:px-16 py-20 max-w-2xl">
                 <h1
-                    class="text-6xl md:text-8xl font-bold uppercase mb-10 leading-none"
+                    class="text-6xl md:text-8xl font-bold uppercase leading-none mb-8 text-white"
                 >
                     Get to<br />Know Us
                 </h1>
-                <p
-                    class="font-mono text-xl md:text-2xl leading-relaxed max-w-3xl border-l-4 border-mist pl-6"
-                >
-                    Learn about Brewvita’s mission and the story behind our
-                    student-led coffee company.
+                <p class="font-mono text-sm md:text-base leading-relaxed text-mist mb-6">
+                    Learn about Brewvita's rich history and mission. Brewvita
+                    was an eight-year dream that became a reality in 2023.
+                    Liberty University's entrepreneurship club, Enactus,
+                    envisioned a student-owned coffee shop on campus. During the
+                    pitch to Sodexo, the team was offered a permanent location
+                    in Green Hall. Through a partnership with the Maples family,
+                    Brewvita officially launched in August 2023.
                 </p>
             </div>
         </section>
 
-        <!-- Who We Are Grid -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 border-b-4 border-navy">
-            <div
-                class="p-12 md:p-20 bg-slate text-mist border-b-4 lg:border-b-0 lg:border-r-4 border-navy"
+        <!-- By Students, For Students -->
+        <section class="border-b-4 border-navy bg-slate py-20 px-10 md:px-20">
+            <h2
+                class="text-5xl md:text-6xl font-bold uppercase mb-10 text-white leading-tight"
             >
-                <h2 class="text-4xl font-bold uppercase mb-8 text-white">
-                    Who We Are
-                </h2>
-                <div class="space-y-8 font-mono">
-                    <div class="group">
-                        <h3
-                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
-                        >
-                            How We Started
-                        </h3>
-                        <p class="text-sm opacity-80">
-                            Brewvita began as a student-driven initiative
-                            focused on building a campus community around
-                            quality coffee.
-                        </p>
-                    </div>
-                    <div class="w-full h-px bg-white/20"></div>
-                    <div class="group">
-                        <h3
-                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
-                        >
-                            Our Mission
-                        </h3>
-                        <p class="text-sm opacity-80">
-                            We serve crafted drinks, support closed coffee
-                            missions, and invest in student leadership.
-                        </p>
-                    </div>
-                    <div class="w-full h-px bg-white/20"></div>
-                    <div class="group">
-                        <h3
-                            class="text-white font-bold mb-2 uppercase group-hover:text-mist transition-colors"
-                        >
-                            Why Brewvita?
-                        </h3>
-                        <p class="text-sm opacity-80">
-                            Every purchase fuels student entrepreneurship and
-                            helps us give back.
-                        </p>
-                    </div>
+                By students,<br />for students
+            </h2>
+            <div
+                class="max-w-3xl space-y-5 font-mono text-sm md:text-base leading-relaxed text-mist"
+            >
+                <p>
+                    Brewvita began as a student-driven initiative focused on
+                    building a campus community around quality coffee. From an
+                    eight-year dream to a permanent location in Green Hall,
+                    every step of this journey has been powered by student
+                    passion and entrepreneurship.
+                </p>
+                <p>
+                    We serve crafted drinks, support closed coffee missions, and
+                    invest in student leadership — making sure every cup has a
+                    purpose beyond the counter.
+                </p>
+                <p>
+                    Every purchase fuels student entrepreneurship and helps us
+                    give back to the Liberty University community we love.
+                </p>
+            </div>
+        </section>
+
+        <!-- Enactus Team Carousel -->
+        <section class="py-20 border-b-4 border-navy bg-white overflow-hidden">
+            <div
+                class="px-10 md:px-16 mb-10 flex items-end justify-between"
+            >
+                <div>
+                    <h2 class="text-4xl font-bold uppercase">
+                        Meet the Enactus Team
+                    </h2>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        id="enactus-prev"
+                        class="w-10 h-10 border-hard shadow-hard bg-white font-bold text-lg hover:bg-navy hover:text-white transition-colors flex items-center justify-center"
+                    >←</button>
+                    <button
+                        id="enactus-next"
+                        class="w-10 h-10 border-hard shadow-hard bg-white font-bold text-lg hover:bg-navy hover:text-white transition-colors flex items-center justify-center"
+                    >→</button>
                 </div>
             </div>
-
-            <div
-                class="p-12 md:p-20 bg-mist text-navy flex items-center justify-center relative overflow-hidden"
-            >
-                <!-- Background element -->
+            <div class="polaroid-wrap">
                 <div
-                    class="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10"
+                    id="enactus-track"
+                    class="no-scrollbar flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-10 md:px-16 pb-8"
                 >
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                    <div class="border-r border-b border-navy"></div>
-                </div>
 
-                <div
-                    class="relative z-10 bg-white border-hard p-10 shadow-hard rotate-2"
-                >
-                    <h3 class="font-bold uppercase text-2xl mb-4 text-center">
-                        Our Story
-                    </h3>
-                    <p class="font-mono text-sm text-center">
-                        We’re a student-run operation that blends craft coffee
-                        with purpose.
-                    </p>
+                    <!-- R&D / Accounting -->
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] -rotate-2">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-slate w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-mist text-center px-2">Photo Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">R&D / Accounting</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">R&D / Accounting</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Research & development and accounting operations.</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supply Chain -->
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-slate w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-mist text-center px-2">Photo Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Supply Chain</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Supply Chain</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Managing sourcing, inventory, and logistics.</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Development -->
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] -rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-slate w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-mist text-center px-2">Photo Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Business Dev</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Business Dev</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Driving growth strategy and new partnerships.</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PR + Marketing -->
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] rotate-2">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-slate w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-mist text-center px-2">Photo Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">PR + Marketing</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">PR + Marketing</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Brand voice, social media, and community outreach.</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Software Development -->
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] -rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-slate w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-mist text-center px-2">Photo Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Software Dev</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Software Dev</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Building and maintaining the Brewvita digital presence.</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
 
-        <!-- Teams -->
-        <section class="py-20 px-6 max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <!-- Team 1 -->
+        <!-- Brew Crew Carousel -->
+        <section class="py-20 border-b-4 border-navy bg-fog overflow-hidden">
+            <div
+                class="px-10 md:px-16 mb-10 flex items-end justify-between"
+            >
                 <div>
-                    <h2
-                        class="text-3xl font-bold uppercase mb-6 bg-navy text-white inline-block px-2"
-                    >
-                        Meet the Enactus Team
-                    </h2>
-                    <ul class="border-hard bg-white">
-                        <li
-                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
-                        >
-                            <span class="w-2 h-2 bg-slate mr-4"></span>Office
-                            coffee & pastry catering
-                        </li>
-                        <li
-                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
-                        >
-                            <span class="w-2 h-2 bg-slate mr-4"></span>Tabling
-                            coffee & middle campus events
-                        </li>
-                        <li class="p-4 font-mono text-sm flex items-center">
-                            <span class="w-2 h-2 bg-slate mr-4"></span>Evening
-                            espresso carts
-                        </li>
-                    </ul>
-                </div>
-                <!-- Team 2 -->
-                <div>
-                    <h2
-                        class="text-3xl font-bold uppercase mb-6 bg-mist text-navy inline-block px-2 border border-navy"
-                    >
+                    <h2 class="text-4xl font-bold uppercase">
                         Meet the Brew Crew
                     </h2>
-                    <ul class="border-hard bg-white">
-                        <li
-                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
-                        >
-                            <span
-                                class="w-2 h-2 bg-mist border border-navy mr-4"
-                            ></span
-                            >Office coffee & pastry catering
-                        </li>
-                        <li
-                            class="border-b-2 border-slate/10 p-4 font-mono text-sm flex items-center"
-                        >
-                            <span
-                                class="w-2 h-2 bg-mist border border-navy mr-4"
-                            ></span
-                            >Tabling coffee & middle campus events
-                        </li>
-                        <li class="p-4 font-mono text-sm flex items-center">
-                            <span
-                                class="w-2 h-2 bg-mist border border-navy mr-4"
-                            ></span
-                            >Evening espresso carts
-                        </li>
-                    </ul>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        id="brew-prev"
+                        class="w-10 h-10 border-hard shadow-hard bg-white font-bold text-lg hover:bg-navy hover:text-white transition-colors flex items-center justify-center"
+                    >←</button>
+                    <button
+                        id="brew-next"
+                        class="w-10 h-10 border-hard shadow-hard bg-white font-bold text-lg hover:bg-navy hover:text-white transition-colors flex items-center justify-center"
+                    >→</button>
+                </div>
+            </div>
+            <div class="polaroid-wrap">
+                <div
+                    id="brew-track"
+                    class="no-scrollbar flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-10 md:px-16 pb-8"
+                >
+
+                    <!-- Placeholder barista cards — swap in real names + photos when ready -->
+
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-mist w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-slate text-center px-2">Headshot Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Barista Name</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Barista Name</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Role / Position</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] -rotate-2">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-mist w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-slate text-center px-2">Headshot Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Barista Name</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Barista Name</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Role / Position</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] rotate-2">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-mist w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-slate text-center px-2">Headshot Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Barista Name</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Barista Name</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Role / Position</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] -rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-mist w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-slate text-center px-2">Headshot Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Barista Name</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Barista Name</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Role / Position</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-52">
+                        <div class="polaroid-card h-[280px] rotate-1">
+                            <div class="polaroid-face bg-white border-hard shadow-hard flex flex-col">
+                                <div class="flex-1 p-2 pb-0 min-h-0">
+                                    <div class="bg-mist w-full h-full flex items-center justify-center">
+                                        <span class="font-mono text-[10px] text-slate text-center px-2">Headshot Coming Soon</span>
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-2 pb-3 text-center">
+                                    <p class="font-sans uppercase text-base leading-tight text-navy">Barista Name</p>
+                                </div>
+                            </div>
+                            <div class="polaroid-back polaroid-face bg-navy border-hard shadow-hard p-6 flex flex-col justify-center">
+                                <p class="font-sans uppercase text-2xl leading-none mb-2 text-fog">Barista Name</p>
+                                <p class="font-mono text-xs text-mist mb-5 leading-relaxed">Role / Position</p>
+                                <a href="#" class="font-mono text-xs border border-mist text-mist px-3 py-2 uppercase text-center hover:bg-mist hover:text-navy transition-colors">LinkedIn →</a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -266,6 +423,25 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         >
             &copy; 2026 Brewvita Coffee Co.
         </footer>
+
+        <script is:inline>
+            function initCarousel(trackId, prevId, nextId) {
+                const track = document.getElementById(trackId);
+                const prev = document.getElementById(prevId);
+                const next = document.getElementById(nextId);
+                if (!track || !prev || !next) return;
+                const step = 208 + 32; // w-52 (208px) + gap-8 (32px)
+                prev.addEventListener("click", () =>
+                    track.scrollBy({ left: -step, behavior: "smooth" })
+                );
+                next.addEventListener("click", () =>
+                    track.scrollBy({ left: step, behavior: "smooth" })
+                );
+            }
+            initCarousel("enactus-track", "enactus-prev", "enactus-next");
+            initCarousel("brew-track", "brew-prev", "brew-next");
+        </script>
+
         <MessagesWidget />
     </body>
 </html>

@@ -97,14 +97,11 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         </nav>
 
         <!-- Intro -->
-        <section class="py-24 px-6 bg-white border-b-4 border-navy">
+        <section class="py-10 px-6 bg-white border-b-4 border-navy">
             <div class="max-w-5xl mx-auto text-center">
-                <h1 class="text-6xl md:text-8xl font-bold uppercase mb-6">
+                <h1 class="text-6xl md:text-8xl font-bold uppercase">
                     Reach Out
                 </h1>
-                <p class="font-mono text-xl text-slate max-w-2xl mx-auto">
-                    Connect with Brewvita Coffee Co. We’d love to hear from you.
-                </p>
             </div>
         </section>
 
@@ -113,25 +110,37 @@ import MessagesWidget from "../components/MessagesWidget.astro";
             <div
                 class="lg:col-span-7 p-12 md:p-16 border-b-4 lg:border-b-0 lg:border-r-4 border-navy bg-fog"
             >
-                <h2
-                    class="text-4xl font-bold uppercase mb-10 border-b-4 border-navy inline-block"
-                >
+                <h2 class="text-4xl font-bold uppercase mb-10">
                     Contact
                 </h2>
 
-                <div class="max-w-xl">
-                    <div class="border-hard bg-white shadow-hard p-8">
-                        <p class="font-mono text-sm uppercase text-slate mb-3">
-                            Email
-                        </p>
-                        <p class="font-mono text-lg uppercase font-bold">
-                            Brewvita Coffee Co.
-                        </p>
-                        <a
-                            href="mailto:students@brewvita.com"
-                            class="mt-2 inline-block font-mono text-lg underline underline-offset-4 hover:text-navy"
-                        >
+                <div class="max-w-xl space-y-4">
+                    <!-- Email -->
+                    <div class="border-hard bg-white shadow-hard p-6">
+                        <p class="font-mono text-xs uppercase text-slate mb-1">Email</p>
+                        <a href="mailto:students@brewvita.com" class="font-mono text-base font-bold hover:underline">
                             students@brewvita.com
+                        </a>
+                    </div>
+                    <!-- Text -->
+                    <div class="border-hard bg-white shadow-hard p-6">
+                        <p class="font-mono text-xs uppercase text-slate mb-1">Text</p>
+                        <a href="sms:+1XXXXXXXXXX" class="font-mono text-base font-bold hover:underline">
+                            +1 (XXX) XXX-XXXX
+                        </a>
+                    </div>
+                    <!-- Instagram -->
+                    <div class="border-hard bg-white shadow-hard p-6">
+                        <p class="font-mono text-xs uppercase text-slate mb-1">Instagram</p>
+                        <a href="https://instagram.com/brewvitacoffee" target="_blank" rel="noopener" class="font-mono text-base font-bold hover:underline">
+                            @brewvitacoffee
+                        </a>
+                    </div>
+                    <!-- LinkedIn -->
+                    <div class="border-hard bg-white shadow-hard p-6">
+                        <p class="font-mono text-xs uppercase text-slate mb-1">LinkedIn</p>
+                        <a href="https://linkedin.com/company/brewvita" target="_blank" rel="noopener" class="font-mono text-base font-bold hover:underline">
+                            Brewvita Coffee Co.
                         </a>
                     </div>
                 </div>
@@ -179,23 +188,6 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                         </summary>
                         <div class="pt-4 pb-2 font-mono text-sm text-slate">
                             We offer teas, energy drinks, and seasonal options.
-                        </div>
-                    </details>
-                    <!-- FAQ 3 -->
-                    <details class="group cursor-pointer">
-                        <summary
-                            class="flex items-center justify-between border-b-2 border-navy pb-4"
-                        >
-                            <span class="font-bold uppercase pr-4"
-                                >Is it okay for freshmen?</span
-                            >
-                            <span
-                                class="text-xl group-open:rotate-45 transition-transform"
-                                >+</span
-                            >
-                        </summary>
-                        <div class="pt-4 pb-2 font-mono text-sm text-slate">
-                            All are welcome—stop by and join the community.
                         </div>
                     </details>
                 </div>
