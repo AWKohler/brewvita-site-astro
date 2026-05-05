@@ -51,8 +51,7 @@ import Footer from "../components/Footer.astro";
         </script>
         <style is:global>
             .border-hard {
-                border: 2px solid #152433;
-                border-radius: 1rem;
+                border: 3px solid #152433;
             }
             .input-hard {
                 border: 1.5px solid #152433;
@@ -92,7 +91,7 @@ import Footer from "../components/Footer.astro";
                 <div class="bg-white border-2 border-navy rounded-[2rem] shadow-lg relative">
 
                     <!-- Not Hiring Notice -->
-                    <div class="bg-navy p-12  md:p-16 rounded-t-3xl relative overflow-hidden">
+                    <div class="bg-navy p-12 rounded-t-3xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10">
                             <svg
                                 class="w-24 h-24 text-navy"
@@ -117,7 +116,7 @@ import Footer from "../components/Footer.astro";
                     </div>
                     <div class="p-12 md:p-16 text-center flex flex-col items-center justify-center min-h-[300px]">
                         <div
-                            class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-md"
+                            class="w-16 h-16 bg-fog border-hard rounded-full flex items-center justify-center mb-6"
                         >
                             <svg class="w-8 h-8 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -131,7 +130,7 @@ import Footer from "../components/Footer.astro";
                         </p>
                         <a
                             href="/"
-                            class="inline-block rounded-full bg-mist text-navy px-8 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-all shadow-md hover:shadow-lg"
+                            class="inline-block border-hard rounded-full bg-mist text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                         >
                             Return to Home
                         </a>
