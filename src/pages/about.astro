@@ -1,6 +1,5 @@
----
 import MessagesWidget from "../components/MessagesWidget.astro";
----
+import Navbar from "../components/Navbar.astro";
 <!doctype html>
 <html lang="en">
     <head>
@@ -71,27 +70,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
     </head>
     <body class="bg-fog text-navy font-sans antialiased">
 
-        <!-- Navbar -->
-        <nav class="sticky top-0 z-50 bg-white border-b-4 border-navy">
-            <div class="flex flex-col md:flex-row items-center relative">
-                <div
-                    class="md:absolute md:left-0 md:top-0 md:bottom-0 md:h-full flex items-center px-6 py-4 bg-navy text-mist"
-                >
-                    <a
-                        href="/"
-                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
-                    >
-                        Brewvita
-                    </a>
-                </div>
-                <div class="flex flex-wrap md:w-full md:justify-center">
-                    <a href="/" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Home</a>
-                    <a href="/menu" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Menu</a>
-                    <a href="/about" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">About</a>
-                    <a href="/contact" class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors">Contact</a>
-                </div>
-            </div>
-        </nav>
+        <Navbar />
 
         <!-- About Hero -->
         <section
