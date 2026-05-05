@@ -1,31 +1,34 @@
 ---
 import MessagesWidget from "../components/MessagesWidget.astro";
+import Navbar from "../components/Navbar.astro";
+import TestimonialCard from "../components/TestimonialCard.astro";
+import Footer from "../components/Footer.astro";
 
 const testimonials = [
     {
-        name: "Kian Graham",
-        quote: "Brewvita is my go-to between classes. Fast service, great espresso, and the baristas always remember my order.",
-        detailOne: "Major: Business",
-        detailTwo: "Year: Sophomore",
-        detailThree: "Favorite drink: House latte",
+        name: "Samuel Falker",
+        quote: "I love the brew crew. Each one of them knows me by name and the usual for each creative menu. It’s been a sweet experience in every sense.",
+        detailOne: "Major: Theatre Arts",
+        detailTwo: "Year: Junior",
+        detailThree: "Favorite drink: French Toast - maple latte with brown sugar foam and cinnamon powder",
         image: "/width_272.webp",
         rotation: "-rotate-2",
     },
     {
-        name: "Celine Guajardo",
-        quote: "The seasonal drinks are actually creative, not just sweet. The honey oat latte is a must.",
-        detailOne: "Major: Graphic Design",
-        detailTwo: "Year: Junior",
-        detailThree: "Favorite drink: Honey oat latte",
+        name: "Corrianna Cossette",
+        quote: "Brewvita is Liberty’s coolest spot. The coffee is absolutely delicious every single time, I’ve never had a coffee there I haven’t liked. Brewvita has my heart.",
+        detailOne: "Major: Film Production & Content Development",
+        detailTwo: "Year: Sophomore",
+        detailThree: "Favorite drink: Palm Tree - blue lotus with pineapple and coconut",
         image: "/width_272.webp",
         rotation: "rotate-1",
     },
     {
-        name: "Harlow Martin",
-        quote: "I love that every cup supports students. Great coffee with a purpose makes it even better.",
-        detailOne: "Major: Marketing",
-        detailTwo: "Year: Senior",
-        detailThree: "Favorite drink: Cold brew",
+        name: "Sturat Bennett",
+        quote: "Since Brewvita first appeared in Tilly, I have become a regular customer. In addition, I love the fact that I am supporting students by giving them my business instead of other commercial vendors. Go Brewvita!",
+        detailOne: "Professor of Cinematic Arts",
+        detailTwo: "",
+        detailThree: "Favorite drink: Hot whole milk latte with 2 splenda",
         image: "/width_272.webp",
         rotation: "-rotate-1",
     },
@@ -96,28 +99,6 @@ const testimonials = [
             .testimonial-grid {
                 perspective: 1800px;
             }
-            .testimonial-card {
-                position: relative;
-                min-height: 25rem;
-                transform-style: preserve-3d;
-                transition:
-                    transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
-                    box-shadow 250ms ease;
-            }
-            .testimonial-face {
-                position: absolute;
-                inset: 0;
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-            }
-            .testimonial-card:hover,
-            .testimonial-card:focus-visible,
-            .testimonial-card:focus-within {
-                transform: rotateY(180deg);
-            }
-            .testimonial-back {
-                transform: rotateY(180deg);
-            }
             @media (max-width: 767px) {
                 .testimonial-card {
                     min-height: 25rem;
@@ -128,43 +109,7 @@ const testimonials = [
     <body
         class="bg-fog text-navy font-sans antialiased selection:bg-slate selection:text-white"
     >
-        <!-- Navbar -->
-        <nav class="sticky top-0 z-50 bg-white border-b-4 border-navy">
-            <div class="flex flex-col md:flex-row items-center relative">
-                <div
-                    class="md:absolute md:left-0 md:top-0 md:bottom-0 md:h-full flex items-center px-6 py-4 bg-navy text-mist"
-                >
-                    <a
-                        href="/"
-                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
-                    >
-                        Brewvita
-                    </a>
-                </div>
-                <div class="flex flex-wrap md:w-full md:justify-center">
-                    <a
-                        href="/"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Home</a
-                    >
-                    <a
-                        href="/menu"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Menu</a
-                    >
-                    <a
-                        href="/about"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >About</a
-                    >
-                    <a
-                        href="/contact"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Contact</a
-                    >
-                </div>
-            </div>
-        </nav>
+        <Navbar />
 
         <!-- Hero -->
         <header
@@ -192,7 +137,7 @@ const testimonials = [
                     Brewvita<span class="md:hidden"><br /></span> Coffee Co.
                 </h1>
                 <p
-                    class="mt-4 font-mono text-sm md:text-base uppercase tracking-[0.2em] text-navy md:text-center"
+                    class="mt-4 font-bold text-sm md:text-base uppercase tracking-[0.2em] text-navy md:text-center"
                 >
                     By Students, For Students.
                 </p>
@@ -217,48 +162,15 @@ const testimonials = [
             <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 testimonial-grid">
                 {
                     testimonials.map((testimonial) => (
-                        <article
-                            tabindex="0"
-                            class={`group relative ${testimonial.rotation} md:hover:rotate-0 md:focus-within:rotate-0 transition-transform duration-300`}
-                            aria-label={`${testimonial.name} testimonial card`}
-                        >
-                            <div class="testimonial-card">
-                                <div class="testimonial-face bg-white border-hard p-4 shadow-hard flex flex-col">
-                                    <img
-                                        src={testimonial.image}
-                                        alt={`${testimonial.name} placeholder portrait`}
-                                        class="h-56 md:h-64 w-full object-cover"
-                                        loading="lazy"
-                                    />
-                                    <div class="px-2 pt-4 flex-1 flex items-start">
-                                        <p class="font-mono text-sm italic leading-snug text-ink text-center">
-                                            "{testimonial.quote}"
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="testimonial-face testimonial-back bg-white border-hard p-6 md:p-7 shadow-hard overflow-hidden">
-                                    <img
-                                        src="/brewvita.png"
-                                        alt=""
-                                        aria-hidden="true"
-                                        class="absolute inset-0 w-full h-full object-contain opacity-10 pointer-events-none"
-                                    />
-                                    <div class="h-full flex flex-col justify-center">
-                                        <div class="max-w-[16rem] mx-auto">
-                                            <p class="font-sans text-4xl md:text-[2.75rem] uppercase leading-none text-ink mb-5">
-                                                {testimonial.name}
-                                            </p>
-                                            <div class="space-y-1 font-mono text-base md:text-lg leading-[1.1] text-ink text-left">
-                                                <p>{testimonial.detailOne}</p>
-                                                <p>{testimonial.detailTwo}</p>
-                                                <p>{testimonial.detailThree}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
+                        <TestimonialCard
+                            name={testimonial.name}
+                            quote={testimonial.quote}
+                            detailOne={testimonial.detailOne}
+                            detailTwo={testimonial.detailTwo}
+                            detailThree={testimonial.detailThree}
+                            image={testimonial.image}
+                            rotation={testimonial.rotation}
+                        />
                     ))
                 }
             </div>
@@ -278,24 +190,11 @@ const testimonials = [
                     </h2>
                     <div class="space-y-6 font-mono text-lg">
                         <p class="opacity-80">
-                            There is no better way to show someone you care
-                            about them than a free coffee!
-                        </p>
-                        <div class="h-px w-full bg-slate"></div>
-                        <p class="opacity-80">
-                            Buy our coffee beans at the Montview Market on
-                            Liberty’s campus.
+                            At Brewvita, every product is rooted in quality and purpose. From our Closed Coffee with meaningful origins to our specialty drinks, everything is crafted with care. We prioritize fresh roasted coffee for a vibrant flavor and offer plant-based energy drinks for a clean, steady boost.
                         </p>
                     </div>
                 </div>
-                <div class="mt-12">
-                    <a
-                        href="#"
-                        class="inline-block w-full text-center bg-mist text-navy border-hard rounded-full px-8 py-4 font-bold uppercase hover:bg-white transition-colors"
-                    >
-                        Shop Now
-                    </a>
-                </div>
+
             </div>
 
             <!-- Photo Right -->
@@ -314,52 +213,34 @@ const testimonials = [
 
         <!-- What is Closed Coffee? -->
         <section
-            class="grid grid-cols-1 md:grid-cols-2 border-b-4 border-navy bg-slate"
+            class="grid grid-cols-1 md:grid-cols-2 border-b-4 border-navy bg-navy"
         >
             <div
-                class="min-h-[26rem] md:min-h-[34rem] border-b-4 md:border-b-0 md:border-r-4 border-navy bg-slate overflow-hidden relative"
+                class="min-h-[26rem] md:min-h-[34rem] border-b-4 md:border-b-0 md:border-r-4 border-navy bg-navy overflow-hidden relative"
             >
                 <img
-                    src="/stack.webp"
+                    src="/closed.webp"
                     alt="Closed Coffee bag stack"
                     class="w-full h-full object-cover"
                 />
             </div>
-            <div class="p-12 md:p-20 flex flex-col justify-center relative bg-slate text-fog">
-                <div
-                    class="absolute top-6 right-6 font-mono text-xs border border-mist text-mist px-2 py-1 uppercase"
-                >
-                    Mission Focused
-                </div>
-
+            <div class="p-12 md:p-20 flex flex-col justify-center relative bg-navy text-fog">
                 <h2
                     class="text-4xl md:text-5xl font-bold uppercase mb-8 text-fog"
                 >
-                    What is
-                    <span class="text-transparent [-webkit-text-stroke:1px_#b8cde6]"
-                        >Closed Coffee?</span
-                    >
+                <span class="text-transparent [-webkit-text-stroke:1px_#b8cde6]">What is</span>
+                    Closed Coffee?
                 </h2>
 
                 <div class="font-mono text-sm leading-relaxed space-y-4 text-mist">
                     <p>
-                        The X Family grows coffee in a country closed to
-                        Christianity. Every bag of Closed Coffee supports
-                        their mission to share Christ’s love and gospel where
-                        His name cannot be spoken.
+                        The X family grows coffee in a country closed to the Christianity. Every bag of Closed Coffee supports the mission of sharing the Gospel where Christ’s name cannot be preached. 
                     </p>
                     <p>
-                        Buy Closed Coffee beans at the Montview Market,
-                        previously the Grid, located in Green Hall of Liberty
-                        University.
+                        Buy Closed Coffee beans at the Montview Market, previously the Grid, located in Montview Student Union at Liberty University.
                     </p>
                 </div>
 
-                <div
-                    class="mt-8 pt-6 border-t-2 border-mist border-dashed font-bold font-mono text-fog"
-                >
-                    WE ONLY BREW THE BEST.
-                </div>
             </div>
         </section>
 
@@ -400,19 +281,14 @@ const testimonials = [
                 </div>
 
                 <div
-                    class="font-mono text-xs uppercase tracking-widest text-slate"
+                    class="text-sm uppercase tracking-widest text-slate"
                 >
                     <p>Follow us on social media</p>
                 </div>
             </div>
         </section>
 
-        <!-- Simple Footer -->
-        <footer
-            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
-        >
-            &copy; 2026 Brewvita Coffee Co.
-        </footer>
+        <Footer />
         <MessagesWidget />
     </body>
 </html>

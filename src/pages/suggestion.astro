@@ -1,5 +1,7 @@
 ---
 import MessagesWidget from "../components/MessagesWidget.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
 ---
 <!doctype html>
 <html lang="en">
@@ -48,17 +50,20 @@ import MessagesWidget from "../components/MessagesWidget.astro";
         </script>
         <style is:global>
             .border-hard {
-                border: 3px solid #152433;
+                border: 2px solid #152433;
+                border-radius: 1rem;
             }
             .input-hard {
-                border: 2px solid #152433;
+                border: 1.5px solid #152433;
+                border-radius: 0.5rem;
             }
 
             /* Custom Focus State */
             .focus-effect:focus {
                 background-color: #ffffff;
-                box-shadow: 4px 4px 0px 0px #152433;
-                transform: translate(-2px, -2px);
+                box-shadow: 0 8px 16px rgba(31, 35, 39, 0.1);
+                outline: 1.5px solid #152433;
+                outline-offset: 2px;
             }
 
             /* Checkered Background Pattern */
@@ -77,75 +82,28 @@ import MessagesWidget from "../components/MessagesWidget.astro";
     <body
         class="bg-fog text-navy font-sans antialiased min-h-screen flex flex-col"
     >
-        <!-- Navbar -->
-        <nav class="sticky top-0 z-50 bg-white border-b-4 border-navy">
-            <div class="flex flex-col md:flex-row items-center relative">
-                <div
-                    class="md:absolute md:left-0 md:top-0 md:bottom-0 md:h-full flex items-center px-6 py-4 bg-navy text-mist"
-                >
-                    <a
-                        href="/"
-                        class="font-bold text-xl tracking-tighter uppercase font-mono hover:text-white transition-colors"
-                    >
-                        Brewvita
-                    </a>
-                </div>
-                <div class="flex flex-wrap md:w-full md:justify-center">
-                    <a
-                        href="/"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Home</a
-                    >
-                    <a
-                        href="/menu"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Menu</a
-                    >
-                    <a
-                        href="/about"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >About</a
-                    >
-                    <a
-                        href="/contact"
-                        class="flex-1 md:flex-none flex items-center justify-center px-6 py-3 font-mono text-sm font-bold uppercase hover:bg-slate hover:text-white transition-colors"
-                        >Contact</a
-                    >
-                </div>
-            </div>
-        </nav>
+        <Navbar />
 
         <!-- Main Content -->
         <main
-            class="flex-grow bg-grid py-12 px-4 md:px-6 flex items-center justify-center"
+            class="flex-grow py-12 px-4 md:px-6 flex items-center justify-center"
         >
             <div class="w-full max-w-2xl">
                 <!-- Form Container -->
-                <div class="bg-white border-hard shadow-hard relative">
-                    <!-- Decorative Top Label -->
-                    <div
-                        class="absolute -top-5 left-4 bg-slate text-white px-2 py-1.5 font-mono text-xs uppercase leading-tight border-2 border-navy shadow-[2px_2px_0px_#152433]"
-                    >
-                        Community Input: LOG-002
-                    </div>
+                <div class="bg-white border-2 border-navy rounded-[2rem] shadow-lg relative">
 
                     <div id="form-wrapper">
                         <!-- Header -->
                         <div
-                            class="bg-slate p-8 md:p-10 border-b-4 border-navy relative overflow-hidden"
+                            class="bg-navy p-12 rounded-t-3xl relative overflow-hidden"
                         >
-                            <!-- Striped Pattern Overlay -->
-                            <div
-                                class="absolute top-0 right-0 w-32 h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#b8cde6_10px,#b8cde6_12px)] opacity-20"
-                            ></div>
-
                             <h1
-                                class="text-4xl md:text-5xl font-bold uppercase text-white mb-2 relative z-10"
+                                class="text-3xl md:text-5xl font-bold uppercase text-fog mb-2 relative z-10"
                             >
                                 Drink Suggestion
                             </h1>
                             <p
-                                class="font-mono text-mist font-bold uppercase tracking-wide relative z-10 text-xs md:text-sm"
+                                class="font-mono text-mist font-bold tracking-wide relative z-10 text-sm md:text-base"
                             >
                                 Help us craft the next menu *
                             </p>
@@ -158,7 +116,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                             id="suggestion-form"
                             target="hidden_iframe"
                             onsubmit="submitted=true;"
-                            class="p-8 md:p-10 space-y-8"
+                            class="p-12 space-y-8"
                         >
                             <!-- Question 1: Name -->
                             <div class="space-y-3">
@@ -225,7 +183,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                                 </p>
                                 <button
                                     type="submit"
-                                    class="w-full md:w-auto bg-navy text-white font-bold font-mono uppercase px-8 py-4 border-hard rounded-full shadow-hard hover:bg-slate hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-200"
+                                    class="w-full md:w-auto bg-navy text-white font-bold font-mono uppercase px-8 py-4 rounded-full shadow-lg hover:bg-slate transition-all duration-200"
                                 >
                                     Submit Idea ->
                                 </button>
@@ -236,10 +194,10 @@ import MessagesWidget from "../components/MessagesWidget.astro";
                     <!-- Success Message (Hidden by default) -->
                     <div
                         id="success-message"
-                        class="hidden p-12 text-center bg-mist min-h-[400px] flex flex-col items-center justify-center"
+                        class="hidden p-12 md:p-16 text-center bg-fog min-h-[400px] flex flex-col items-center justify-center rounded-b-3xl"
                     >
                         <div
-                            class="w-20 h-20 bg-white border-hard flex items-center justify-center mb-6 shadow-hard rotate-3"
+                            class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-md"
                         >
                             <svg
                                 class="w-10 h-10 text-navy"
@@ -267,7 +225,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
 
                         <button
                             onclick="location.reload()"
-                            class="inline-block border-hard rounded-full bg-white text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                            class="inline-block rounded-full bg-white text-navy px-8 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-all shadow-md hover:shadow-lg"
                         >
                             Submit Another
                         </button>
@@ -282,11 +240,7 @@ import MessagesWidget from "../components/MessagesWidget.astro";
             </div>
         </main>
 
-        <footer
-            class="bg-navy text-mist py-8 border-t-4 border-navy text-center font-mono text-xs uppercase"
-        >
-            &copy; 2026 Brewvita Coffee Co.
-        </footer>
+        <Footer />
 
         <!-- Hidden iframe logic -->
         <iframe
