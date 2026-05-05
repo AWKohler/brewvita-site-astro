@@ -1,0 +1,91 @@
+---
+interface Props {
+    name: string;
+    quote: string;
+    detailOne: string;
+    detailTwo?: string;
+    detailThree: string;
+    image: string;
+    rotation: string;
+}
+
+const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astro.props;
+---
+
+<article class={`group relative ${rotation} testimonial-wrapper`}>
+    <!-- Hidden hover tracker -->
+    <div class="testimonial-tracker"></div>
+    
+    <!-- Visible card that flips based on tracker hover -->
+    <div class="testimonial-card">
+        <div class="testimonial-face bg-white border-hard p-4 shadow-hard flex flex-col">
+            <img
+                src={image}
+                alt={`${name} placeholder portrait`}
+                class="h-56 md:h-64 w-full object-cover"
+                loading="lazy"
+            />
+            <div class="px-2 pt-4 flex-1 flex items-start">
+                <p class="font-mono text-sm italic leading-snug text-ink text-center">
+                    "{quote}"
+                </p>
+            </div>
+        </div>
+
+        <div class="testimonial-face testimonial-back bg-white border-hard p-6 md:p-7 shadow-hard overflow-hidden">
+            <img
+                src="/brewvita.png"
+                alt=""
+                aria-hidden="true"
+                class="absolute inset-0 w-full h-full object-contain opacity-10 pointer-events-none"
+            />
+            <div class="h-full flex flex-col justify-center">
+                <div class="max-w-[16rem] mx-auto">
+                    <p class="font-sans text-4xl md:text-[2.75rem] uppercase leading-none text-ink mb-5">
+                        {name}
+                    </p>
+                    <div class="space-y-1 font-mono text-base md:text-lg leading-[1.1] text-ink text-left">
+                        <p>{detailOne}</p>
+                        {detailTwo && <p>{detailTwo}</p>}
+                        <p>{detailThree}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+<style>
+    .testimonial-wrapper {
+        position: relative;
+    }
+
+    .testimonial-tracker {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+    }
+
+    .testimonial-card {
+        position: relative;
+        min-height: 25rem;
+        transform-style: preserve-3d;
+        transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .testimonial-tracker:hover ~ .testimonial-card,
+    .testimonial-card:focus-within {
+        transform: rotateY(180deg);
+    }
+
+    .testimonial-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    .testimonial-back {
+        transform: rotateY(180deg);
+    }
+</style>

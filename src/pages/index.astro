@@ -1,6 +1,7 @@
 ---
 import MessagesWidget from "../components/MessagesWidget.astro";
 import Navbar from "../components/Navbar.astro";
+import TestimonialCard from "../components/TestimonialCard.astro";
 
 const testimonials = [
     {
@@ -25,6 +26,7 @@ const testimonials = [
         name: "Sturat Bennett",
         quote: "Since Brewvita first appeared in Tilly, I have become a regular customer. In addition, I love the fact that I am supporting students by giving them my business instead of other commercial vendors. Go Brewvita!",
         detailOne: "Professor of Cinematic Arts",
+        detailTwo: "",
         detailThree: "Favorite drink: Hot whole milk latte with 2 splenda",
         image: "/width_272.webp",
         rotation: "-rotate-1",
@@ -96,28 +98,6 @@ const testimonials = [
             .testimonial-grid {
                 perspective: 1800px;
             }
-            .testimonial-card {
-                position: relative;
-                min-height: 25rem;
-                transform-style: preserve-3d;
-                transition:
-                    transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
-                    box-shadow 250ms ease;
-            }
-            .testimonial-face {
-                position: absolute;
-                inset: 0;
-                backface-visibility: hidden;
-                -webkit-backface-visibility: hidden;
-            }
-            .testimonial-card:hover,
-            .testimonial-card:focus-visible,
-            .testimonial-card:focus-within {
-                transform: rotateY(180deg);
-            }
-            .testimonial-back {
-                transform: rotateY(180deg);
-            }
             @media (max-width: 767px) {
                 .testimonial-card {
                     min-height: 25rem;
@@ -181,48 +161,15 @@ const testimonials = [
             <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 testimonial-grid">
                 {
                     testimonials.map((testimonial) => (
-                        <article
-                            tabindex="0"
-                            class={`group relative ${testimonial.rotation} md:hover:rotate-0 md:focus-within:rotate-0 transition-transform duration-300`}
-                            aria-label={`${testimonial.name} testimonial card`}
-                        >
-                            <div class="testimonial-card">
-                                <div class="testimonial-face bg-white border-hard p-4 shadow-hard flex flex-col">
-                                    <img
-                                        src={testimonial.image}
-                                        alt={`${testimonial.name} placeholder portrait`}
-                                        class="h-56 md:h-64 w-full object-cover"
-                                        loading="lazy"
-                                    />
-                                    <div class="px-2 pt-4 flex-1 flex items-start">
-                                        <p class="font-mono text-sm italic leading-snug text-ink text-center">
-                                            "{testimonial.quote}"
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="testimonial-face testimonial-back bg-white border-hard p-6 md:p-7 shadow-hard overflow-hidden">
-                                    <img
-                                        src="/brewvita.png"
-                                        alt=""
-                                        aria-hidden="true"
-                                        class="absolute inset-0 w-full h-full object-contain opacity-10 pointer-events-none"
-                                    />
-                                    <div class="h-full flex flex-col justify-center">
-                                        <div class="max-w-[16rem] mx-auto">
-                                            <p class="font-sans text-4xl md:text-[2.75rem] uppercase leading-none text-ink mb-5">
-                                                {testimonial.name}
-                                            </p>
-                                            <div class="space-y-1 font-mono text-base md:text-lg leading-[1.1] text-ink text-left">
-                                                <p>{testimonial.detailOne}</p>
-                                                <p>{testimonial.detailTwo}</p>
-                                                <p>{testimonial.detailThree}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
+                        <TestimonialCard
+                            name={testimonial.name}
+                            quote={testimonial.quote}
+                            detailOne={testimonial.detailOne}
+                            detailTwo={testimonial.detailTwo}
+                            detailThree={testimonial.detailThree}
+                            image={testimonial.image}
+                            rotation={testimonial.rotation}
+                        />
                     ))
                 }
             </div>
