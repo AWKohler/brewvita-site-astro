@@ -1,5 +1,7 @@
+---
 import MessagesWidget from "../components/MessagesWidget.astro";
 import Navbar from "../components/Navbar.astro";
+---
 <!doctype html>
 <html lang="en">
     <head>
@@ -48,16 +50,19 @@ import Navbar from "../components/Navbar.astro";
         </script>
         <style is:global>
             .border-hard {
-                border: 3px solid #152433;
+                border: 2px solid #152433;
+                border-radius: 1rem;
             }
             .input-hard {
-                border: 2px solid #152433;
+                border: 1.5px solid #152433;
+                border-radius: 0.5rem;
             }
 
             .focus-effect:focus {
                 background-color: #ffffff;
-                box-shadow: 4px 4px 0px 0px #152433;
-                transform: translate(-2px, -2px);
+                box-shadow: 0 8px 16px rgba(31, 35, 39, 0.1);
+                outline: 1.5px solid #152433;
+                outline-offset: 2px;
             }
 
             .bg-grid {
@@ -79,20 +84,14 @@ import Navbar from "../components/Navbar.astro";
 
         <!-- Main Content -->
         <main
-            class="flex-grow bg-grid py-12 px-4 md:px-6 flex items-center justify-center"
+            class="flex-grow py-12 px-4 md:px-6 flex items-center justify-center"
         >
             <div class="w-full max-w-2xl">
                 <!-- Form Container -->
-                <div class="bg-white border-hard shadow-hard relative">
-                    <!-- Badge -->
-                    <div
-                        class="absolute -top-5 left-4 bg-mist text-navy px-2 py-1.5 font-mono text-xs uppercase leading-tight border-2 border-navy shadow-[2px_2px_0px_#152433]"
-                    >
-                        Join The Team
-                    </div>
+                <div class="bg-white border-2 border-navy rounded-[2rem] shadow-lg relative">
 
                     <!-- Not Hiring Notice -->
-                    <div class="bg-mist p-8 md:p-10 border-b-4 border-navy relative overflow-hidden">
+                    <div class="bg-navy p-12  md:p-16 rounded-t-3xl relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10">
                             <svg
                                 class="w-24 h-24 text-navy"
@@ -105,19 +104,19 @@ import Navbar from "../components/Navbar.astro";
                             </svg>
                         </div>
                         <h1
-                            class="text-3xl md:text-5xl font-bold uppercase text-navy mb-2 relative z-10"
+                            class="text-3xl md:text-5xl font-bold uppercase text-fog mb-2 relative z-10"
                         >
                             Brewvita Involvement
                         </h1>
                         <p
-                            class="font-mono text-slate font-bold tracking-wide relative z-10 text-sm md:text-base"
+                            class="font-mono text-mist font-bold tracking-wide relative z-10 text-sm md:text-base"
                         >
                             Apply to be involved with Brewvita
                         </p>
                     </div>
-                    <div class="p-10 md:p-14 text-center flex flex-col items-center justify-center min-h-[300px]">
+                    <div class="p-12 md:p-16 text-center flex flex-col items-center justify-center min-h-[300px]">
                         <div
-                            class="w-16 h-16 bg-fog border-hard rounded-full flex items-center justify-center mb-6"
+                            class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-8 shadow-md"
                         >
                             <svg class="w-8 h-8 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -131,7 +130,7 @@ import Navbar from "../components/Navbar.astro";
                         </p>
                         <a
                             href="/"
-                            class="inline-block border-hard rounded-full bg-mist text-navy px-6 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-colors shadow-hard hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                            class="inline-block rounded-full bg-mist text-navy px-8 py-3 font-bold uppercase text-xs hover:bg-navy hover:text-white transition-all shadow-md hover:shadow-lg"
                         >
                             Return to Home
                         </a>
