@@ -7,9 +7,11 @@ interface Props {
     detailThree: string;
     image: string;
     rotation: string;
+    /** Tighter crop / zoom for full-length portraits so the face fills the frame. */
+    imageCrop?: "face";
 }
 
-const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astro.props;
+const { name, quote, detailOne, detailTwo, detailThree, image, rotation, imageCrop } = Astro.props;
 ---
 
 <article class={`group relative ${rotation} testimonial-wrapper`}>
@@ -19,12 +21,17 @@ const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astr
     <!-- Visible card that flips based on tracker hover -->
     <div class="testimonial-card">
         <div class="testimonial-face bg-white border-hard p-4 shadow-hard flex flex-col">
-            <img
-                src={image}
-                alt={`${name} placeholder portrait`}
-                class="h-56 md:h-64 w-full object-cover"
-                loading="lazy"
-            />
+            <div class="testimonial-photo-frame h-56 md:h-64 w-full shrink-0 overflow-hidden">
+                <img
+                    src={image}
+                    alt={`Portrait of ${name}`}
+                    class:list={[
+                        "testimonial-photo h-full w-full object-cover",
+                        imageCrop === "face" && "testimonial-photo--face-crop",
+                    ]}
+                    loading="lazy"
+                />
+            </div>
             <div class="px-2 pt-4 flex-1 flex items-start">
                 <p class="testimonial-quote font-mono text-sm italic leading-snug text-ink text-center">
                     "{quote}"
@@ -87,6 +94,12 @@ const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astr
 
     .testimonial-back {
         transform: rotateY(180deg);
+    }
+
+    .testimonial-photo--face-crop {
+        object-position: 50% 18%;
+        transform: scale(1.38);
+        transform-origin: 50% 22%;
     }
 
     /* Prefer line breaks that avoid a lone word on the last line (widows). */

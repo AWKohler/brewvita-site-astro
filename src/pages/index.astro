@@ -4,14 +4,25 @@ import Navbar from "../components/Navbar.astro";
 import TestimonialCard from "../components/TestimonialCard.astro";
 import Footer from "../components/Footer.astro";
 
-const testimonials = [
+type Testimonial = {
+    name: string;
+    quote: string;
+    detailOne: string;
+    detailTwo?: string;
+    detailThree: string;
+    image: string;
+    rotation: string;
+    imageCrop?: "face";
+};
+
+const testimonials: Testimonial[] = [
     {
         name: "Samuel Falker",
         quote: "I love the brew crew. Each one of them knows me by name and the usual for each creative menu. It’s been a sweet experience in every sense.",
         detailOne: "Major: Theatre Arts",
         detailTwo: "Year: Junior",
         detailThree: "Favorite drink: French Toast - maple latte with brown sugar foam and cinnamon powder",
-        image: "/width_272.webp",
+        image: "/testimonial-samuel.png",
         rotation: "-rotate-2",
     },
     {
@@ -20,8 +31,9 @@ const testimonials = [
         detailOne: "Major: Film Production & Content Development",
         detailTwo: "Year: Sophomore",
         detailThree: "Favorite drink: Palm Tree - blue lotus with pineapple and coconut",
-        image: "/width_272.webp",
+        image: "/testimonial-corrianna.png",
         rotation: "rotate-1",
+        imageCrop: "face",
     },
     {
         name: "Stuart Bennett",
@@ -29,7 +41,7 @@ const testimonials = [
         detailOne: "Professor of Cinematic Arts",
         detailTwo: "",
         detailThree: "Favorite drink: Hot whole milk latte with 2 splenda",
-        image: "/width_272.webp",
+        image: "/testimonial-stuart.png",
         rotation: "-rotate-1",
     },
 ];
@@ -170,6 +182,7 @@ const testimonials = [
                             detailThree={testimonial.detailThree}
                             image={testimonial.image}
                             rotation={testimonial.rotation}
+                            imageCrop={testimonial.imageCrop}
                         />
                     ))
                 }
