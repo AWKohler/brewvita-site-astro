@@ -45,4 +45,4 @@ Feel free to check [our documentation](https://docs.astro.build) or jump into ou
 
 ## Commands to use
 
-`pnpm astro run dev`
+`pnpm run astro dev`
