@@ -26,7 +26,7 @@ const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astr
                 loading="lazy"
             />
             <div class="px-2 pt-4 flex-1 flex items-start">
-                <p class="font-mono text-sm italic leading-snug text-ink text-center">
+                <p class="testimonial-quote font-mono text-sm italic leading-snug text-ink text-center">
                     "{quote}"
                 </p>
             </div>
@@ -87,5 +87,10 @@ const { name, quote, detailOne, detailTwo, detailThree, image, rotation } = Astr
 
     .testimonial-back {
         transform: rotateY(180deg);
+    }
+
+    /* Prefer line breaks that avoid a lone word on the last line (widows). */
+    .testimonial-quote {
+        text-wrap: pretty;
     }
 </style>
